@@ -68,6 +68,18 @@ export function updateApp(appDir, { git = true } = {}) {
 
   // Seeds: files the app owns once they exist (policies, lessons). Written only when missing.
   for (const rel of m.seed ?? []) if (!existsSync(join(app, rel))) put(join(SCAFFOLD, rel), rel)
+  // Seeds written before the rename still name the old commands. Rename only those names;
+  // everything else in the file is the app's own.
+  for (const rel of m.seed ?? []) {
+    const p = join(app, rel)
+    if (!existsSync(p)) continue
+    const text = readFileSync(p, 'utf8')
+    const renamed = renameLegacy(text)
+    if (renamed !== text) {
+      writeFileSync(p, renamed)
+      changed.push(`${rel} (old command names)`)
+    }
+  }
 
   // Copies of the plugin's skills and reviewer from before the plugin existed: now duplicates.
   for (const rel of m.remove ?? []) {
@@ -129,6 +141,14 @@ export function updateApp(appDir, { git = true } = {}) {
   }
   return { branch, version, changed, extra, depNotes }
 }
+
+// The plugin was called ai-sdlc until 0.3.0: its commands, agents and repo, never other words.
+export const renameLegacy = (text) =>
+  text
+    .replace(/\/ai-sdlc:/g, '/yolo-sdlc:')
+    .replace(/\bai-sdlc:(?=[a-z])/g, 'yolo-sdlc:')
+    .replace(/tammai\/ai-sdlc\b/g, 'tammai/yolo-sdlc')
+    .replace(/\bthe ai-sdlc plugin\b/g, 'the yolo-sdlc plugin')
 
 export function updateIntent({ version, from, today, changed, extra, depNotes }) {
   const list = (xs) => xs.map((x) => `- \`${x}\``).join('\n')

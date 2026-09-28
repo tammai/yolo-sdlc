@@ -63,7 +63,7 @@ test("update-app: restores plugin files and never touches the app's own work", (
   mkdirSync(join(dir, '.claude/skills/my-own'), { recursive: true })
   writeFileSync(join(dir, '.claude/skills/my-own/SKILL.md'), '# an engineer skill\n')
   // Seeds: an app's own policies stay; a missing lessons file is created.
-  writeFileSync(join(dir, 'POLICIES.md'), '# Our policies\n')
+  writeFileSync(join(dir, 'POLICIES.md'), '# Our policies\nChecked at `/ai-sdlc:shape`. Our ai-sdlc rollout is in Q3.\n')
   rmSync(join(dir, 'LEARNED.md'))
   // An app from before the rename: its version stamp is .ai-sdlc.json.
   rmSync(join(dir, '.yolo-sdlc.json'))
@@ -84,8 +84,9 @@ test("update-app: restores plugin files and never touches the app's own work", (
   assert.ok(r.changed.includes('scripts/risk-tier/hook.mjs'))
   assert.ok(r.changed.includes('package.json (scripts)'))
   assert.deepEqual(r.extra, ['scripts/seed.mjs'])
-  assert.equal(readFileSync(join(dir, 'POLICIES.md'), 'utf8'), '# Our policies\n')
-  assert.ok(r.changed.includes('LEARNED.md') && !r.changed.includes('POLICIES.md'))
+  // The app's own policies stay, except the old command names, which are renamed.
+  assert.equal(readFileSync(join(dir, 'POLICIES.md'), 'utf8'), '# Our policies\nChecked at `/yolo-sdlc:shape`. Our ai-sdlc rollout is in Q3.\n')
+  assert.ok(r.changed.includes('LEARNED.md') && r.changed.includes('POLICIES.md (old command names)') && !r.changed.includes('POLICIES.md'))
   const intent = r.changed.find((c) => /^intent\/\d{4}-\d\d-\d\d-yolo-sdlc-update-/.test(c))
   assert.ok(intent, 'the update writes its own intent')
   const text = readFileSync(join(dir, intent), 'utf8')
