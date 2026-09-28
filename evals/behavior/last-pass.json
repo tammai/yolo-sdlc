@@ -1,7 +1,7 @@
 {
   "fingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "date": "2026-09-28",
-  "passed": 20,
+  "passed": 23,
   "version": "0.4.2",
   "ledgerFingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "scenarios": {
@@ -104,6 +104,21 @@
       "hash": "d82c6b7afd9f359f",
       "date": "2026-09-28",
       "results": "behavior-2026-09-28-04-33-44.json"
+    },
+    "triage-drafts-intents": {
+      "hash": "4437953e30380a04",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-43-26.json"
+    },
+    "learn-proposes-lessons": {
+      "hash": "4b98380ba9f1d1bd",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-43-26.json"
+    },
+    "report-explains-metrics": {
+      "hash": "f1a66f5651da75d7",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-43-26.json"
     }
   }
 }

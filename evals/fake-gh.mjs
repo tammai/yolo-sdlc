@@ -60,6 +60,38 @@ function currentPr() {
   return pr
 }
 
+// Read-only history for /yolo-sdlc:report and /yolo-sdlc:learn, seeded by the scenario
+// (setup.gh.history): merged pull requests with commits and files, their comments, and ci runs.
+const history = state.history ?? { merged: [], comments: {}, runs: {} }
+const pick = (obj, fields) => (fields ? Object.fromEntries(fields.split(',').map((f) => [f, obj[f] ?? null])) : obj)
+const numberArg = Number(args[2])
+
+if (cmd === 'pr' && sub === 'list') {
+  const want = flag('--state') ?? 'open'
+  const limit = Number(flag('--limit') ?? 30)
+  const rows = want === 'merged' ? history.merged : []
+  out(JSON.stringify(rows.slice(0, limit).map((pr) => pick(pr, flag('--json')))))
+  save()
+  process.exit(0)
+}
+if (cmd === 'pr' && sub === 'view' && Number.isInteger(numberArg) && numberArg > 0) {
+  const pr = history.merged.find((p) => p.number === numberArg)
+  if (!pr) fail(`GraphQL: Could not resolve to a PullRequest with the number of ${numberArg}.`)
+  out(JSON.stringify(pick(pr, flag('--json'))))
+  save()
+  process.exit(0)
+}
+if (cmd === 'api' && /^repos\/[^/]+\/[^/]+\/issues\/\d+\/comments/.test(sub ?? '')) {
+  out(JSON.stringify(history.comments[sub.match(/issues\/(\d+)\//)[1]] ?? []))
+  save()
+  process.exit(0)
+}
+if (cmd === 'run' && sub === 'list') {
+  out(JSON.stringify((history.runs[flag('--branch')] ?? []).map((r) => pick(r, flag('--json')))))
+  save()
+  process.exit(0)
+}
+
 if (cmd === 'auth' && sub === 'status') {
   out('github.com\n  ✓ Logged in to github.com account eval-user (fake-gh, for evals)')
 } else if (cmd === 'repo' && sub === 'view') {

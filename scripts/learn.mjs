@@ -11,6 +11,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { ghJson } from './report.mjs'
 
 const section = (text, heading) => text.split(new RegExp(`^### ${heading}\\s*$`, 'm'))[1]?.split(/^#{1,3} /m)[0] ?? ''
 const item = (line) => {
@@ -73,7 +74,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   )
   const comments = []
   if (!args.includes('--no-gh')) {
-    const gh = (...a) => JSON.parse(execFileSync('gh', a, { cwd: app, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }))
+    const gh = (...a) => ghJson(app, a)
     const repo = gh('repo', 'view', '--json', 'nameWithOwner').nameWithOwner
     for (const { number } of gh('pr', 'list', '--state', 'merged', '--limit', String(limit), '--json', 'number')) {
       for (const c of gh('api', `repos/${repo}/issues/${number}/comments?per_page=100`)) comments.push({ pr: number, body: c.body })

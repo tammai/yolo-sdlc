@@ -59,17 +59,23 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
       console.error('Reading problem reports from the live app is for engineers (RISK_TIER_ROLE=engineer). Ask an engineer to run /yolo-sdlc:triage.')
       process.exit(2)
     }
-    // wrangler's own entry file, run by node: no shell, so the query stays one argument on Windows too.
-    const wrangler = join(app, 'node_modules', 'wrangler', 'bin', 'wrangler.js')
-    if (!existsSync(wrangler)) {
-      console.error('wrangler is not installed in this app. Run pnpm install first.')
-      process.exit(2)
+    if (process.env.YOLO_SDLC_REPORTS) {
+      // Test seam: the plugin's behaviour evals point this at a saved `wrangler d1 execute --json`
+      // result, so an eval never reads a live database. Unset everywhere else.
+      raw = readFileSync(process.env.YOLO_SDLC_REPORTS, 'utf8')
+    } else {
+      // wrangler's own entry file, run by node: no shell, so the query stays one argument on Windows too.
+      const wrangler = join(app, 'node_modules', 'wrangler', 'bin', 'wrangler.js')
+      if (!existsSync(wrangler)) {
+        console.error('wrangler is not installed in this app. Run pnpm install first.')
+        process.exit(2)
+      }
+      raw = execFileSync(process.execPath, [wrangler, 'd1', 'execute', 'DB', '--remote', '--json', '--command', QUERY], {
+        cwd: app,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'inherit'],
+      })
     }
-    raw = execFileSync(process.execPath, [wrangler, 'd1', 'execute', 'DB', '--remote', '--json', '--command', QUERY], {
-      cwd: app,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'inherit'],
-    })
   }
   const rows = rowsFrom(raw)
   const covered = referencedIds(intentTexts(app))

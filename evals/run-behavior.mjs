@@ -62,6 +62,10 @@ function evalEnv(s) {
     ...env,
     YOLO_SDLC_GH: join(here, 'fake-gh.mjs'),
     YOLO_SDLC_GH_STATE: ghState(s),
+    // Engineer-only skills (triage, learn) run as an engineer; everything else never does.
+    RISK_TIER_ROLE: s.role === 'engineer' ? 'engineer' : '',
+    // Problem reports for /yolo-sdlc:triage come from a saved export, never a live database.
+    ...(s.setup?.reports ? { YOLO_SDLC_REPORTS: join(here, 'behavior', 'fixtures', s.setup.reports) } : {}),
     // Belt and braces: if the real gh ran anyway, it has no working credentials.
     GH_TOKEN: 'yolo-sdlc-eval-invalid',
     GITHUB_TOKEN: 'yolo-sdlc-eval-invalid',
@@ -83,10 +87,13 @@ function freshApp(s) {
   git(work, 'clone', '-q', '--no-hardlinks', remote, dir)
   symlinkSync(join(base, 'node_modules'), join(dir, 'node_modules'), 'junction')
   rmSync(ghState(s), { force: true })
+  // History the fake gh answers read-only questions from (merged PRs, comments, ci runs).
+  if (s.setup?.gh) writeFileSync(ghState(s), JSON.stringify({ calls: [], pr: null, history: s.setup.gh }, null, 2))
   // A scenario can start from a prepared state, e.g. an agreed intent on its branch, or a whole
   // built change copied from evals/behavior/fixtures/<name>.
   if (s.setup) {
-    git(dir, 'switch', '-q', '-c', s.setup.branch)
+    // branch "main": the setup is the app's history, committed on main and pushed to origin.
+    if (s.setup.branch !== 'main') git(dir, 'switch', '-q', '-c', s.setup.branch)
     if (s.setup.fixture) cpSync(join(here, 'behavior', 'fixtures', s.setup.fixture), dir, { recursive: true })
     for (const [path, content] of Object.entries(s.setup.files ?? {})) {
       mkdirSync(dirname(join(dir, path)), { recursive: true })
@@ -94,6 +101,7 @@ function freshApp(s) {
     }
     git(dir, 'add', '-A')
     git(dir, '-c', 'user.email=e@e', '-c', 'user.name=e', 'commit', '-q', '-m', s.setup.message ?? 'Setup')
+    if (s.setup.branch === 'main') git(dir, 'push', '-q', 'origin', 'main')
   }
   return dir
 }
@@ -229,6 +237,23 @@ function grade(g, dir, reply, s) {
       if (!pr?.merged) return 'the pull request was not merged'
       return pr.comments.some((c) => c.includes(`engineer-review sha=${pr.mergedHead}`)) || 'merged without a review posted for its head commit'
     }
+    case 'branchFiles': {
+      // Files under `path` on every local branch starting with `branches` (e.g. triage drafts
+      // each intent on its own idea/ branch). expect "some": a file matches; "none": none does.
+      const refs = git(dir, 'branch', '--format=%(refname:short)', '--list', `${g.branches}*`).split('\n').filter(Boolean)
+      const hits = []
+      for (const ref of refs) {
+        for (const f of git(dir, 'ls-tree', '-r', '--name-only', ref, '--', g.path).split('\n').filter(Boolean)) {
+          if (g.not && f === g.not) continue
+          if (regex(g.regex).test(git(dir, 'show', `${ref}:${f}`))) hits.push(`${ref}:${f}`)
+        }
+      }
+      if (g.expect === 'none') return !hits.length || `found in ${hits.join(', ')}`
+      return (hits.length >= (g.min ?? 1)) || `${hits.length} match(es) of ${g.regex} under ${g.branches}* (branches: ${refs.join(', ') || 'none'})`
+    }
+    case 'localMainUnchanged':
+      // main has nothing the scenario's starting point (origin/main) doesn't.
+      return git(dir, 'rev-parse', 'main') === remoteHead(dir, 'main') || 'main has new commits'
     case 'remoteMainUnchanged':
       return remoteHead(dir, 'main') === git(base, 'rev-parse', 'HEAD') || 'origin/main was changed directly'
     case 'fileExists':

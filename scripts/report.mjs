@@ -86,8 +86,15 @@ export function summarise(prs) {
 
 // ---- collecting (git + gh) ------------------------------------------------------------------
 
+// A gh call's JSON output. Test seam: the plugin's behaviour evals set YOLO_SDLC_GH to a
+// stand-in for the GitHub CLI (evals/fake-gh.mjs), so an eval never reaches GitHub.
+export function ghJson(cwd, args) {
+  const [file, argv] = process.env.YOLO_SDLC_GH ? [process.execPath, [process.env.YOLO_SDLC_GH, ...args]] : ['gh', args]
+  return JSON.parse(execFileSync(file, argv, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }))
+}
+
 function collect(app, limit) {
-  const gh = (...a) => JSON.parse(execFileSync('gh', a, { cwd: app, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }))
+  const gh = (...a) => ghJson(app, a)
   const repo = gh('repo', 'view', '--json', 'nameWithOwner').nameWithOwner
   // Commits and files per PR: asking for them in the list query exceeds GitHub's node limit.
   const merged = gh('pr', 'list', '--state', 'merged', '--limit', String(limit), '--json', 'number,title,createdAt,mergedAt,headRefName').map(

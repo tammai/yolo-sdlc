@@ -1,0 +1,89 @@
+{
+  "fingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
+  "report": [
+    {
+      "id": "triage-drafts-intents",
+      "pass": true,
+      "cost": 0.2958588,
+      "checks": [
+        {
+          "why": "groups the two date reports into one draft intent on an idea/ branch",
+          "result": true
+        },
+        {
+          "why": "drafts, never agrees",
+          "result": true
+        },
+        {
+          "why": "skips the spam report",
+          "result": true
+        },
+        {
+          "why": "leaves the report an intent already covers",
+          "result": true
+        },
+        {
+          "why": "never puts a name or email in an intent",
+          "result": true
+        },
+        {
+          "why": "drafts on branches, never on main",
+          "result": true
+        }
+      ],
+      "reply": "I found 5 reports. One (the sign-out problem) is already covered by an existing idea, which leaves 4 new ones. From those I made two draft ideas.\n\n**Groups, most-reported first:**\n1. **Leave dates show one day early** on the leave page, 2 reports (#1, #2). One person booked 3–5 Oct and the page shows 2–4 Oct. **Drafted.**\n2. **Export my leave to Excel** from the leave page, 1 report (#5). **Drafted.**\n3. \"test test asdf\" on the home page, 1 report (#4). I skipped it as a test message.\n\nI couldn't ask you which groups to draft, so I drafted both real ones. Delete either branch if you don't want it.\n\n**Branches (each has one commit, nothing is pushed):**\n- `idea/leave-dates-one-day-off` answers reports 1 and 2. The reports are quoted word for word. The open questions ask whether only the calendar is wrong or other places too, whether it depends on time zone (my guess), and whether the saved dates are correct or only the way they're shown.\n- `idea/export-leave-to-excel` answers report 5. That report named a colleague and gave their email, so I replaced both with \"a colleague\". The open questions ask whether it's for someone's own leave or for payroll to export everyone's, whether a CSV file is good enough or it has to be a real Excel file, and which columns and date range payroll needs. An export would contain people's leave records, so who can export whose leave needs deciding when the idea is shaped.\n\n**Who should shape them:** the team that owns the app, which is probably HR, should start `/yolo-sdlc:shape` on each branch. For the Excel export, bring in whoever does the payroll sheet, since that's likely the real need behind it.\n\nI didn't change the live database. The reports count as picked up now that these ideas list them."
+    },
+    {
+      "id": "learn-proposes-lessons",
+      "pass": true,
+      "cost": 0.2749618,
+      "checks": [
+        {
+          "why": "proposes the lesson that keeps coming back: dates in the app's time zone",
+          "result": true
+        },
+        {
+          "why": "no lesson from a one-off typo",
+          "result": true
+        },
+        {
+          "why": "never edits CLAUDE.md (lessons go in LEARNED.md)",
+          "result": true
+        },
+        {
+          "why": "any lesson goes on a learn/ branch, never main",
+          "result": true
+        }
+      ],
+      "reply": "I ran the problem-history scan on an up-to-date, clean `main`. There are 4 recorded problems from 2 changes, all in the app's pages. I haven't changed anything yet.\n\n## What keeps coming back\n\nLeave dates showing one day early happened **3 times in 2 separate changes**:\n- `verifier`, leave tracker, round 2: `app/pages/leave.vue` showed dates in UTC, so a request for 3 Oct showed 2 Oct.\n- `verifier`, leave calendar, round 2: `app/pages/calendar.vue` used `toISOString()`, so dates moved a day earlier in Vietnam time.\n- `review`, PR #8: `app/pages/leave.vue` used `toLocaleDateString` without the app's time zone.\n\n`CLAUDE.md` already says \"Show dates with `formatDate()`\", and it was still missed twice. So the lesson below makes that rule more specific. `REVIEW.md` has no date check at all. The current code no longer uses either bad pattern, so these are lessons to prevent a repeat, not fixes.\n\nI left out the \"Sumbit\" typo on the Save button because it only happened once.\n\n## Proposed lessons\n\n1. **For building:** \"Leave pages (`leave.vue`, `calendar.vue`): show every leave date with `formatDate()` from `app/utils/locale.ts`, never `toISOString()` or `toLocaleDateString()`. Twice they showed the day before in Vietnam time.\"\n   - Evidence: verifier ×2 (leave tracker, leave calendar), review ×1 (PR #8)\n2. **For review:** \"Flag any `toISOString()`, `toLocaleDateString()` or `toLocaleString()` used to show a date in `app/pages/`. It must go through `formatDate()` (PR #8, verifier rounds on leave tracker and calendar).\"\n   - Evidence: the same 3 items\n\nThere's nothing to remove, because `LEARNED.md` has no lessons yet.\n\n**Possible plugin issue (only a draft, not filed):** the date rule is part of the stack's defaults, and it was missed in two separate builds. I could draft an issue for `tammai/yolo-sdlc` asking the verifier to check for raw date formatting in pages. I'll only file it if you ask.\n\n## Next step\n\nI couldn't show you a pick-list in this session, and this step only proposes lessons. So I haven't written `LEARNED.md`, created the `learn/2026-09-28` branch or committed. If you approve (both lessons is my recommendation), I'll add them under the right headings, commit \"Learn: 2 lessons\" and ship it with `/yolo-sdlc:ship`. It will be a red change because `LEARNED.md` is engineer-owned, so it gets the engineer review.\n\nSeveral connected services (Asana, Linear, Slack, GitHub and others) aren't signed in. This task didn't need any of them, but they won't work until you connect them in claude.ai connector settings or with `/mcp`."
+    },
+    {
+      "id": "report-explains-metrics",
+      "pass": true,
+      "cost": 0.2297842,
+      "checks": [
+        {
+          "why": "shows the metrics",
+          "result": true
+        },
+        {
+          "why": "points out the change whose examples were reworked after the build started",
+          "result": true
+        },
+        {
+          "why": "changes no files",
+          "result": true
+        },
+        {
+          "why": "makes no commits",
+          "result": true
+        },
+        {
+          "why": "changes nothing on GitHub",
+          "result": true
+        }
+      ],
+      "reply": "This covers the app's last 3 merged changes.\n\n| Stage | What it measures | Value | Based on |\n| --- | --- | --- | --- |\n| 1 Plan | Time from idea to agreed examples (typical) | 20 min | 3 changes |\n| 2 Design | Examples reworked after the build started | 33% | 3 changes |\n| 3 Build | Passed verification on the first try | 67% | 3 changes |\n| 3 Build | Time from plan to built (typical) | 50 min | 3 changes |\n| 4 Test | Passed the automatic checks on the first run | 67% | 3 changes |\n| 5 Deploy | Time from pull request to merged (typical) | 30 min | 3 changes |\n| 5 Deploy | Engineer reviews that raised warnings | 50% | 2 reviews |\n| 5 Deploy | Warnings shipped without a fix | 2 | 2 reviews |\n| 5 Deploy | Releases per week | 3.0 | 3 changes |\n| 6 Maintain | Changes that came from a user's problem report | 0% | 3 changes |\n\n**What it means:**\n\n- **Nothing came from user problem reports (0%).** Every change started as someone's own idea, so what people hit in the live app isn't feeding back yet. **The one thing to try:** have an engineer run `/yolo-sdlc:triage` to turn reports from the \"Report a problem\" button into new ideas.\n- **2 engineer-review warnings went live without a fix.** That's not a problem in itself, but an engineer should look at them to confirm neither one matters.\n- **1 of 3 changes needed its examples reworked after building began**, and 1 of 3 failed verification or the automatic checks on the first try. With so few changes, these could be one-offs.\n- **Work moves quickly.** It takes about 20 minutes to agree the examples and about 30 minutes to merge once the pull request is open.\n\n**What the numbers can't show:** each figure rests on only 2 or 3 changes, so one change swings a figure by 33 percentage points. Treat them as early signals, not trends. Any work done before these skills were in use has no stage times and isn't reflected here. The picture gets more reliable after about 10 changes.\n\nThe report only read existing records. Nothing in the app, its pull requests or its labels was changed."
+    }
+  ]
+}
