@@ -89,7 +89,7 @@
   },
   {
     "id": "local-migration-allowed",
-    "source": "/ai-sdlc:build step 3",
+    "source": "/yolo-sdlc:build step 3",
     "tool": "Bash",
     "input": {
       "command": "pnpm exec wrangler d1 migrations apply DB --local"
@@ -100,7 +100,7 @@
   },
   {
     "id": "push-feature-allowed",
-    "source": "/ai-sdlc:ship step 4",
+    "source": "/yolo-sdlc:ship step 4",
     "tool": "Bash",
     "input": {
       "command": "git push -u origin HEAD"
@@ -365,7 +365,7 @@
     "source": "faking the plugin version an app is on",
     "tool": "Bash",
     "input": {
-      "command": "echo {} > .ai-sdlc.json"
+      "command": "echo {} > .yolo-sdlc.json"
     },
     "expect": {
       "blocked": true

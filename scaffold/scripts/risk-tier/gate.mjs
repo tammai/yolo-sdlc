@@ -4,7 +4,7 @@
 //
 //   green          → no review
 //   yellow and red → an engineer review record for this exact commit (review-record.mjs), which
-//                    /ai-sdlc:ship posts after the engineer-reviewer subagent has reviewed the branch.
+//                    /yolo-sdlc:ship posts after the engineer-reviewer subagent has reviewed the branch.
 //                    Its findings are warnings, never blockers. A person's approval also works:
 //                    reviewers.yellow or reviewers.red for yellow, reviewers.red for red.
 //
@@ -53,6 +53,6 @@ export function decide({ tier, reviews, registry, author, headSha, review }) {
       reason: `No ${tier} reviewers other than the author are listed in app.registry.json. Ask an engineer to add them.`,
     }
   }
-  const who = [...(reviewOn ? ['the engineer review (/ai-sdlc:ship runs it)'] : []), ...people]
+  const who = [...(reviewOn ? ['the engineer review (/yolo-sdlc:ship runs it)'] : []), ...people]
   return { pass: false, reason: `Waiting for ${who.join(' or ')}.`, needed: allowed }
 }

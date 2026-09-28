@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// /ai-sdlc:report. The playbook's per-stage metrics for one app, computed from what the
+// /yolo-sdlc:report. The playbook's per-stage metrics for one app, computed from what the
 // workflow already records: merged PRs and their commits (the skills commit with fixed
 // prefixes: Idea:, Agree examples:, Plan:, Build:, Ship:), the intents' build logs, the
 // engineer review records, and the ci runs. Nothing new to collect.

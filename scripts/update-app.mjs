@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// /ai-sdlc:update-app. Brings an existing app's plugin-owned files up to this plugin version:
+// /yolo-sdlc:update-app. Brings an existing app's plugin-owned files up to this plugin version:
 //   node update-app.mjs [appDir]
 // Only paths listed in scripts/managed.json are written. The app's own work (pages, queries,
 // API routes, schema, migrations, intents, content, example tests, config) is never touched.
 // Runs on a new branch and adds an intent describing the update (it never edits existing
-// intents); the result ships like any change, through /ai-sdlc:ship.
+// intents); the result ships like any change, through /yolo-sdlc:ship.
 
 import { execFileSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
@@ -25,16 +25,22 @@ const same = (a, b) => existsSync(b) && readFileSync(a).equals(readFileSync(b))
 export function updateApp(appDir, { git = true } = {}) {
   const app = resolve(appDir)
   if (!existsSync(join(app, 'app.registry.json')) || !existsSync(join(app, 'scripts', 'risk-tier'))) {
-    throw new Error(`${app} doesn't look like an ai-sdlc app (no app.registry.json or scripts/risk-tier/)`)
+    throw new Error(`${app} doesn't look like a yolo-sdlc app (no app.registry.json or scripts/risk-tier/)`)
   }
   const run = (...args) => execFileSync('git', args, { cwd: app, encoding: 'utf8' }).trim()
   const version = pluginVersion()
   let branch = null
   if (git) {
     if (run('status', '--porcelain')) throw new Error('The app has uncommitted changes. Commit or stash them first.')
-    branch = `ai-sdlc-update-${version}`
+    branch = `yolo-sdlc-update-${version}`
     run('switch', '-q', '-c', branch)
   }
+
+  // The version that last wrote the app's files. Apps from before the rename (ai-sdlc) have
+  // .ai-sdlc.json, which the manifest's remove list then deletes.
+  const stampPath = join(app, '.yolo-sdlc.json')
+  const legacyStamp = join(app, '.ai-sdlc.json')
+  const from = [stampPath, legacyStamp].filter((p) => existsSync(p)).map((p) => readJson(p).version)[0] ?? null
 
   const m = managed()
   const changed = []
@@ -100,18 +106,16 @@ export function updateApp(appDir, { git = true } = {}) {
   execFileSync(process.execPath, [join(app, 'scripts', 'ui-template.mjs'), ...(template ? [template] : [])], { cwd: app, stdio: 'ignore' })
   if (snapshot(join(app, 'layers', 'ui')) !== before) changed.push('layers/ui/')
 
-  const stampPath = join(app, '.ai-sdlc.json')
-  const from = existsSync(stampPath) ? readJson(stampPath).version : null
-  const stamp = JSON.stringify({ plugin: 'ai-sdlc', version }, null, 2) + '\n'
+  const stamp = JSON.stringify({ plugin: 'yolo-sdlc', version }, null, 2) + '\n'
   if (!existsSync(stampPath) || readFileSync(stampPath, 'utf8') !== stamp) {
     writeFileSync(stampPath, stamp)
-    if (changed.length) changed.push('.ai-sdlc.json')
+    if (changed.length) changed.push('.yolo-sdlc.json')
   }
 
   // The record of why this change exists, like any other: the engineer review reads it.
   if (changed.length) {
     const today = new Date().toISOString().slice(0, 10)
-    const rel = `intent/${today}-ai-sdlc-update-${version.replace(/\./g, '-')}.md`
+    const rel = `intent/${today}-yolo-sdlc-update-${version.replace(/\./g, '-')}.md`
     if (!existsSync(join(app, rel))) {
       mkdirSync(join(app, 'intent'), { recursive: true })
       writeFileSync(join(app, rel), updateIntent({ version, from, today, changed, extra, depNotes }))
@@ -121,7 +125,7 @@ export function updateApp(appDir, { git = true } = {}) {
 
   if (git && changed.length) {
     run('add', '-A')
-    run('commit', '-q', '-m', `Update ai-sdlc managed files to ${version}`)
+    run('commit', '-q', '-m', `Update yolo-sdlc managed files to ${version}`)
   }
   return { branch, version, changed, extra, depNotes }
 }
@@ -129,7 +133,7 @@ export function updateApp(appDir, { git = true } = {}) {
 export function updateIntent({ version, from, today, changed, extra, depNotes }) {
   const list = (xs) => xs.map((x) => `- \`${x}\``).join('\n')
   return `---
-title: Update the ai-sdlc safety files to ${version}
+title: Update the yolo-sdlc safety files to ${version}
 author: Engineering
 status: built   # draft → agreed → built → shipped | dropped
 tier: red       # engineer-owned files
@@ -137,13 +141,13 @@ created: ${today}
 reports:
 ---
 
-# Update the ai-sdlc safety files to ${version}
+# Update the yolo-sdlc safety files to ${version}
 
 ## The problem
-This app's plugin-owned files (risk rules, merge gate, CI, session hook, deploy guard, UI shell, CLAUDE.md, REVIEW.md) are from ${from ? `ai-sdlc ${from}` : 'before the plugin recorded versions'}. The installed plugin is ${version}.
+This app's plugin-owned files (risk rules, merge gate, CI, session hook, deploy guard, UI shell, CLAUDE.md, REVIEW.md) are from ${from ? `plugin version ${from}` : 'before the plugin recorded versions'}. The installed plugin is ${version}.
 
 ## What should be true afterwards
-The app's safety files match ai-sdlc ${version}, and nothing the app's owners built has changed.
+The app's safety files match yolo-sdlc ${version}, and nothing the app's owners built has changed.
 
 ## Examples
 1. When I run \`pnpm check\`, every existing check passes.
@@ -152,7 +156,7 @@ The app's safety files match ai-sdlc ${version}, and nothing the app's owners bu
 ## What will change
 ${list(changed)}
 
-What changed in the plugin itself: its release notes for ${version} (https://github.com/tammai/ai-sdlc/releases).
+What changed in the plugin itself: its release notes for ${version} (https://github.com/tammai/yolo-sdlc/releases).
 ${extra.length ? `\nKept as they are (added by an engineer, not from the plugin):\n${list(extra)}\n` : ''}${depNotes.length ? `\nDependencies that differ from the plugin's (not changed):\n${depNotes.map((d) => `- ${d}`).join('\n')}\n` : ''}
 ## Policy concerns
 None.
@@ -173,11 +177,11 @@ function snapshot(dir) {
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   try {
     const r = updateApp(process.argv[2] ?? process.cwd())
-    console.log(`ai-sdlc ${r.version} on branch ${r.branch}`)
+    console.log(`yolo-sdlc ${r.version} on branch ${r.branch}`)
     console.log(r.changed.length ? `Updated:\n${r.changed.map((c) => `  - ${c}`).join('\n')}` : 'Already up to date.')
     if (r.extra.length) console.log(`Kept (not from the plugin):\n${r.extra.map((c) => `  - ${c}`).join('\n')}`)
     if (r.depNotes.length) console.log(`Dependencies differ (not changed):\n${r.depNotes.map((c) => `  - ${c}`).join('\n')}`)
-    console.log('Next: pnpm install && pnpm check, then /ai-sdlc:ship.')
+    console.log('Next: pnpm install && pnpm check, then /yolo-sdlc:ship.')
   } catch (err) {
     console.error(`✋ ${err.message}`)
     process.exit(1)

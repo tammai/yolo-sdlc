@@ -1,8 +1,8 @@
 # Policies
 
-The organisation's rules that an idea must respect, checked at `/ai-sdlc:shape` before anything is built. They're about what the app does, not how the code looks (that's `REVIEW.md`). Engineer-owned: edit these to match your organisation, and ask legal, HR or security to confirm them.
+The organisation's rules that an idea must respect, checked at `/yolo-sdlc:shape` before anything is built. They're about what the app does, not how the code looks (that's `REVIEW.md`). Engineer-owned: edit these to match your organisation, and ask legal, HR or security to confirm them.
 
-Each policy has a short id, the rule, and what to do when an idea touches it. When an idea touches a policy, `/ai-sdlc:shape` records it under **Policy concerns** in the intent, and the engineer review checks the build against it.
+Each policy has a short id, the rule, and what to do when an idea touches it. When an idea touches a policy, `/yolo-sdlc:shape` records it under **Policy concerns** in the intent, and the engineer review checks the build against it.
 
 ## Starter policies (replace with your own)
 

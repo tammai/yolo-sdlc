@@ -39,7 +39,7 @@ for (const s of load('tiers.json')) {
 // Each scenario gets its own repo: main, plus a branch idea/eval with any setup files committed
 // (and, with reviewHead, the engineer review saved for that commit).
 function makeRepo(setup) {
-  const repo = mkdtempSync(join(tmpdir(), 'aisdlc-eval-'))
+  const repo = mkdtempSync(join(tmpdir(), 'yolosdlc-eval-'))
   const git = (...a) => execFileSync('git', a, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
   const cfg = ['-c', 'user.email=e@e', '-c', 'user.name=e']
   git('init', '-q', '-b', 'main')
@@ -54,9 +54,9 @@ function makeRepo(setup) {
     git(...cfg, 'commit', '-q', '-m', 'setup')
   }
   if (setup?.reviewHead) {
-    mkdirSync(join(repo, '.git', 'ai-sdlc-review'), { recursive: true })
+    mkdirSync(join(repo, '.git', 'yolo-sdlc-review'), { recursive: true })
     const sha = git('rev-parse', 'HEAD')
-    writeFileSync(join(repo, '.git', 'ai-sdlc-review', `${sha}.json`), JSON.stringify({ sha, summary: 'Reviewed.', warnings: [] }))
+    writeFileSync(join(repo, '.git', 'yolo-sdlc-review', `${sha}.json`), JSON.stringify({ sha, summary: 'Reviewed.', warnings: [] }))
   }
   return repo
 }

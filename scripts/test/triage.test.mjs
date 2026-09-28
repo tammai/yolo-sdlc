@@ -26,7 +26,7 @@ test('pending drops covered reports and never carries the reporter', () => {
 })
 
 test('cli: --from a wrangler export, against the app intents; the live read needs an engineer', () => {
-  const app = mkdtempSync(join(tmpdir(), 'aisdlc-tri-'))
+  const app = mkdtempSync(join(tmpdir(), 'yolosdlc-tri-'))
   try {
     mkdirSync(join(app, 'intent'))
     writeFileSync(join(app, 'intent', '2026-09-01-dates.md'), '---\ntitle: dates\nreports: 3\n---\n')

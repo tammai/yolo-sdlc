@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // `pnpm review:post <review.json>`: post the engineer-reviewer's result on this branch's pull
-// request and re-run the merge gate. Run by /ai-sdlc:ship. Engineer-owned.
+// request and re-run the merge gate. Run by /yolo-sdlc:ship. Engineer-owned.
 //
 // Refuses a review of any commit other than the one the pull request is on now, so an old
 // review can't be reused for newer code.
@@ -31,14 +31,14 @@ if (problems.length) stop(`The review is incomplete: ${problems.join('; ')}.`)
 
 const local = run('git', ['rev-parse', 'HEAD'])
 if (review.sha !== local) {
-  stop(`The review is of ${review.sha.slice(0, 7)}, but this branch is at ${local.slice(0, 7)}: something was committed after the review. Review again (/ai-sdlc:ship step 3).`)
+  stop(`The review is of ${review.sha.slice(0, 7)}, but this branch is at ${local.slice(0, 7)}: something was committed after the review. Review again (/yolo-sdlc:ship step 3).`)
 }
 
 let pr
 try {
   pr = JSON.parse(run('gh', ['pr', 'view', '--json', 'number,headRefOid,url']))
 } catch {
-  stop('No pull request for this branch yet. Push the reviewed commit and open it first (/ai-sdlc:ship step 4).')
+  stop('No pull request for this branch yet. Push the reviewed commit and open it first (/yolo-sdlc:ship step 4).')
 }
 if (pr.headRefOid !== review.sha) {
   stop(`The pull request is at ${pr.headRefOid.slice(0, 7)}, not the reviewed ${review.sha.slice(0, 7)}. Push the reviewed commit (git push), then post again.`)

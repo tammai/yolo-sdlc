@@ -57,7 +57,7 @@ test('authors cannot approve their own change, even when listed', () => {
 })
 
 test('waiting message names the review and the people', () => {
-  assert.match(run('red', []).reason, /engineer review \(\/ai-sdlc:ship runs it\) or @eng1 or @eng2/)
+  assert.match(run('red', []).reason, /engineer review \(\/yolo-sdlc:ship runs it\) or @eng1 or @eng2/)
 })
 
 test('review off and no reviewers configured fails closed with a readable reason', () => {

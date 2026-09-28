@@ -8,7 +8,7 @@ import { createApp, pluginVersion } from '../new-app.mjs'
 import { updateApp } from '../update-app.mjs'
 
 // Short temp paths: Windows' 260-character limit bites deep scaffold paths otherwise.
-const root = mkdtempSync(join(tmpdir(), 'aisdlc-'))
+const root = mkdtempSync(join(tmpdir(), 'yolosdlc-'))
 after(() => rmSync(root, { recursive: true, force: true }))
 const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'))
 const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim()
@@ -23,11 +23,11 @@ test('new-app: an internal app gets the dashboard shell, its name, type and a fi
   assert.match(wr, /"name": "leave-tracker"/)
   assert.doesNotMatch(wr, /todo-app-name/)
   assert.match(readFileSync(join(dir, 'app/app.config.ts'), 'utf8'), /name: 'Leave Tracker'/)
-  assert.equal(readJson(join(dir, '.ai-sdlc.json')).version, pluginVersion())
+  assert.equal(readJson(join(dir, '.yolo-sdlc.json')).version, pluginVersion())
   assert.ok(!existsSync(join(dir, 'node_modules')), 'no build output copied')
   assert.ok(!existsSync(join(dir, '.claude/skills')), 'skills come from the plugin, not the app')
-  assert.equal(readJson(join(dir, '.claude/settings.json')).enabledPlugins['ai-sdlc@ai-sdlc'], true)
-  assert.match(git(dir, 'log', '--oneline'), /Start leave-tracker from ai-sdlc/)
+  assert.equal(readJson(join(dir, '.claude/settings.json')).enabledPlugins['yolo-sdlc@yolo-sdlc'], true)
+  assert.match(git(dir, 'log', '--oneline'), /Start leave-tracker from yolo-sdlc/)
 })
 
 test('new-app: a public app gets the landing shell, its content, and APP_TYPE public', () => {
@@ -65,6 +65,9 @@ test("update-app: restores plugin files and never touches the app's own work", (
   // Seeds: an app's own policies stay; a missing lessons file is created.
   writeFileSync(join(dir, 'POLICIES.md'), '# Our policies\n')
   rmSync(join(dir, 'LEARNED.md'))
+  // An app from before the rename: its version stamp is .ai-sdlc.json.
+  rmSync(join(dir, '.yolo-sdlc.json'))
+  writeFileSync(join(dir, '.ai-sdlc.json'), JSON.stringify({ plugin: 'ai-sdlc', version: '0.3.0' }) + '\n')
   const pkg = readJson(join(dir, 'package.json'))
   pkg.scripts.check = 'echo old'
   writeFileSync(join(dir, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
@@ -77,17 +80,21 @@ test("update-app: restores plugin files and never touches the app's own work", (
   process.env.GIT_AUTHOR_NAME = process.env.GIT_COMMITTER_NAME = 't'
   process.env.GIT_AUTHOR_EMAIL = process.env.GIT_COMMITTER_EMAIL = 't@t'
   const r = updateApp(dir)
-  assert.equal(r.branch, `ai-sdlc-update-${pluginVersion()}`)
+  assert.equal(r.branch, `yolo-sdlc-update-${pluginVersion()}`)
   assert.ok(r.changed.includes('scripts/risk-tier/hook.mjs'))
   assert.ok(r.changed.includes('package.json (scripts)'))
   assert.deepEqual(r.extra, ['scripts/seed.mjs'])
   assert.equal(readFileSync(join(dir, 'POLICIES.md'), 'utf8'), '# Our policies\n')
   assert.ok(r.changed.includes('LEARNED.md') && !r.changed.includes('POLICIES.md'))
-  const intent = r.changed.find((c) => /^intent\/\d{4}-\d\d-\d\d-ai-sdlc-update-/.test(c))
+  const intent = r.changed.find((c) => /^intent\/\d{4}-\d\d-\d\d-yolo-sdlc-update-/.test(c))
   assert.ok(intent, 'the update writes its own intent')
   const text = readFileSync(join(dir, intent), 'utf8')
   assert.match(text, new RegExp(`to ${pluginVersion().replace(/\./g, '\\.')}`))
   assert.match(text, /tier: red/)
+  assert.match(text, /are from plugin version 0\.3\.0/)
+  assert.ok(!existsSync(join(dir, '.ai-sdlc.json')), 'the pre-rename stamp is removed')
+  assert.equal(readJson(join(dir, '.yolo-sdlc.json')).version, pluginVersion())
+  assert.equal(readJson(join(dir, '.claude/settings.json')).enabledPlugins['yolo-sdlc@yolo-sdlc'], true)
   assert.match(text, /`scripts\/risk-tier\/hook\.mjs`/)
   assert.notEqual(readFileSync(join(dir, 'scripts/risk-tier/hook.mjs'), 'utf8'), '// old hook\n')
   assert.notEqual(readJson(join(dir, 'package.json')).scripts.check, 'echo old')
@@ -100,10 +107,10 @@ test("update-app: restores plugin files and never touches the app's own work", (
   assert.deepEqual(updateApp(dir, { git: false }).changed, [], 'a second run finds nothing to update')
 })
 
-test('update-app: refuses a folder that is not an ai-sdlc app, and uncommitted work', () => {
+test('update-app: refuses a folder that is not a yolo-sdlc app, and uncommitted work', () => {
   const plain = join(root, 'plain')
   mkdirSync(plain)
-  assert.throws(() => updateApp(plain), /doesn't look like an ai-sdlc app/)
+  assert.throws(() => updateApp(plain), /doesn't look like a yolo-sdlc app/)
   const dirty = join(root, 'dirty')
   createApp(dirty, { name: 'dirty-app', type: 'prototype', data: 'public' })
   writeFileSync(join(dirty, 'app/app.config.ts'), '// unsaved\n')

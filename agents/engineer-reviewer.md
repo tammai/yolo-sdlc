@@ -1,6 +1,6 @@
 ---
 name: engineer-reviewer
-description: "Independent engineer review against REVIEW.md, in two modes: a PLAN review of an intent's technical plan before any code (run by /ai-sdlc:build for yellow/red changes), and a CHANGE review of the branch's diff before push (run by /ai-sdlc:ship). Read-only; returns a summary plus warnings as JSON. Never edits, commits or pushes."
+description: "Independent engineer review against REVIEW.md, in two modes: a PLAN review of an intent's technical plan before any code (run by /yolo-sdlc:build for yellow/red changes), and a CHANGE review of the branch's diff before push (run by /yolo-sdlc:ship). Read-only; returns a summary plus warnings as JSON. Never edits, commits or pushes."
 tools: Read, Grep, Glob, Bash
 ---
 

@@ -3,7 +3,7 @@
   { "id": "landing-copy", "source": "marketing edits content/landing.yml", "changes": [{ "path": "content/landing.yml", "status": "modified", "added": ["title: Join our team"] }], "expect": { "tier": "green" } },
   { "id": "menu-item", "source": "PR #9 (leave in the menu)", "changes": [{ "path": "app/app.config.ts", "status": "modified", "added": ["    { label: 'Leave', icon: 'i-lucide-calendar', to: '/leave' },"] }], "expect": { "tier": "green" } },
   { "id": "new-page-existing-query", "source": "a page listing existing reports", "changes": [{ "path": "app/pages/summary.vue", "added": ["const { data } = useFeedbackList()"] }], "expect": { "tier": "green" } },
-  { "id": "new-example-test", "source": "/ai-sdlc:build adds a check", "changes": [{ "path": "tests/examples/summary.spec.ts", "added": ["test('When I open Summary, I see 3 reports', async () => {})"] }], "expect": { "tier": "green" } },
+  { "id": "new-example-test", "source": "/yolo-sdlc:build adds a check", "changes": [{ "path": "tests/examples/summary.spec.ts", "added": ["test('When I open Summary, I see 3 reports', async () => {})"] }], "expect": { "tier": "green" } },
 
   { "id": "new-table", "source": "a table with no personal data", "changes": [{ "path": "server/db/schema.ts", "status": "modified", "added": ["export const rooms = sqliteTable('rooms', { id: integer('id').primaryKey(), label: text('label') })"] }], "expect": { "tier": "yellow", "rules": ["database-change"] } },
   { "id": "new-read-route", "source": "a staff-only list", "changes": [{ "path": "server/api/rooms.get.ts", "added": ["  await requireUser(event)"] }], "expect": { "tier": "yellow", "rules": ["server-route"] } },

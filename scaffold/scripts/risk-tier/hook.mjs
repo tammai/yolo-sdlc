@@ -37,7 +37,7 @@ const deny = (reason) =>
 // ---------- Bash ----------
 
 const PROTECTED_IN_SHELL =
-  /(?:>>?|\btee\b|\bsed\s+-i|\bmv\b|\bcp\b|\brm\b|\bgit\s+(?:checkout|restore)\b)[^\n|;&]*(?:\.github[\\/]|\.claude[\\/]|scripts[\\/]|layers[\\/]|ui-templates[\\/]|wrangler\.(?:jsonc|toml)|app\.registry\.json|CLAUDE\.md|REVIEW\.md|POLICIES\.md|LEARNED\.md|docs[\\/]|\.ai-sdlc\.json|content\.config\.ts|colada\.options\.ts)/
+  /(?:>>?|\btee\b|\bsed\s+-i|\bmv\b|\bcp\b|\brm\b|\bgit\s+(?:checkout|restore)\b)[^\n|;&]*(?:\.github[\\/]|\.claude[\\/]|scripts[\\/]|layers[\\/]|ui-templates[\\/]|wrangler\.(?:jsonc|toml)|app\.registry\.json|CLAUDE\.md|REVIEW\.md|POLICIES\.md|LEARNED\.md|docs[\\/]|\.yolo-sdlc\.json|content\.config\.ts|colada\.options\.ts)/
 
 // `git push`, also with options before it: git -C . push, git -c k=v push, git --no-pager push.
 const PUSH = String.raw`\bgit(?:\s+-[Cc]\s+\S+|\s+-\S+)*\s+push\b`
@@ -81,7 +81,7 @@ function checkBash(command, cwd) {
 }
 
 // Review before push: a yellow or red branch leaves this computer only after the engineer
-// review of its exact commit (/ai-sdlc:ship step 3 saves it to .git/ai-sdlc-review/<sha>.json).
+// review of its exact commit (/yolo-sdlc:ship step 3 saves it to .git/yolo-sdlc-review/<sha>.json).
 // Engineers, and apps where people review instead ("claudeReview": false), push freely.
 function requireReviewBeforePush(cwd) {
   if (isEngineer || registryField(cwd, 'claudeReview') === false || !isGitRepo(cwd)) return
@@ -92,7 +92,7 @@ function requireReviewBeforePush(cwd) {
   if (reviewSaved(cwd, head)) return
   deny(
     `Blocked by the risk check: this is a ${tier} change, and commit ${head.slice(0, 7)} hasn't had its engineer review yet. ` +
-      `Run the review first (/ai-sdlc:ship step 3): it saves to .git/ai-sdlc-review/${head}.json, and then the push goes through. ${TAIL}`,
+      `Run the review first (/yolo-sdlc:ship step 3): it saves to .git/yolo-sdlc-review/${head}.json, and then the push goes through. ${TAIL}`,
   )
 }
 
@@ -100,7 +100,7 @@ function requireReviewBeforePush(cwd) {
 // `pnpm review:post` makes. The file is local and could be forged: the merge gate is the lock.
 function reviewSaved(cwd, head) {
   try {
-    const review = JSON.parse(readFileSync(join(gitDir(cwd), 'ai-sdlc-review', `${head}.json`), 'utf8'))
+    const review = JSON.parse(readFileSync(join(gitDir(cwd), 'yolo-sdlc-review', `${head}.json`), 'utf8'))
     return validateReview(review).length === 0 && review.sha === head
   } catch {
     return false

@@ -1,9 +1,9 @@
 ---
 name: idea
-description: "Capture what someone wants the app to do as an intent/*.md file in their own words, before anything is built. Use when a person describes a problem, a wish or a new feature ('I want…', 'can the app…', 'we need a way to…'), or types /ai-sdlc:idea."
+description: "Capture what someone wants the app to do as an intent/*.md file in their own words, before anything is built. Use when a person describes a problem, a wish or a new feature ('I want…', 'can the app…', 'we need a way to…'), or types /yolo-sdlc:idea."
 ---
 
-# /ai-sdlc:idea: write down what they want
+# /yolo-sdlc:idea: write down what they want
 
 The person is usually not an engineer. Your job here is to **listen and write it down**, not to design or build. Nothing in the app changes during this step.
 
@@ -27,7 +27,7 @@ The person is usually not an engineer. Your job here is to **listen and write it
 5. **Write `intent/<YYYY-MM-DD>-<slug>.md`** from `intent/_template.md`:
    - Use `status: draft`. The author is their role (e.g. "HR team"), never a personal name or email.
    - The problem and outcome go **in their own words**. Quote them where you can.
-   - Leave **Examples** as a rough list, or empty. `/ai-sdlc:shape` makes them precise.
+   - Leave **Examples** as a rough list, or empty. `/yolo-sdlc:shape` makes them precise.
    - Under **Data**, say plainly whether anything describes real people.
 
 6. **Read it back** as five short lines (problem, who, outcome, data, open questions), then ask with `AskUserQuestion`: "Did I get that right?" with options **Yes, that's it** / **Mostly: small fixes** / **No, let me explain again**. Fix anything they correct. Their words win over yours.
@@ -36,10 +36,10 @@ The person is usually not an engineer. Your job here is to **listen and write it
 
 8. **Early warnings, not blockers.** If the idea involves personal data, emails, outside services or new libraries, say in one sentence that the engineer review will look closely at that part before it goes live, and that it's fine to keep going.
 
-9. **Next:** "Next we'll agree a few concrete examples of how it should work. Say **/ai-sdlc:shape** when you're ready."
+9. **Next:** "Next we'll agree a few concrete examples of how it should work. Say **/yolo-sdlc:shape** when you're ready."
 
 ## Don't
 
 - Don't write code, change pages or touch the database.
 - Don't turn it into a requirements document. A page of their words beats three pages of yours.
-- Don't promise dates or tiers. `/ai-sdlc:shape` and `/ai-sdlc:ship` handle those.
+- Don't promise dates or tiers. `/yolo-sdlc:shape` and `/yolo-sdlc:ship` handle those.

@@ -65,7 +65,7 @@ const reviews = await gh('GET', `${repo}/pulls/${PR_NUMBER}/reviews?per_page=100
 const comments = await gh('GET', `${repo}/issues/${PR_NUMBER}/comments?per_page=100`)
 const mine = comments.find((c) => c.body?.startsWith(MARKER))
 
-// The engineer review record /ai-sdlc:ship posted for this exact commit, if any (review-record.mjs).
+// The engineer review record /yolo-sdlc:ship posted for this exact commit, if any (review-record.mjs).
 const review = findReview(comments, HEAD_SHA)
 
 const decision = decide({ tier: result.tier, reviews, registry, author: PR_AUTHOR, headSha: HEAD_SHA, review })

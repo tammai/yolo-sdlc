@@ -1,11 +1,11 @@
 ---
 name: new-app
-description: "Engineers: create a new ai-sdlc app (Nuxt UI + Cloudflare, risk tiers, engineer review) in a new folder, with the right UI shell for its type, then hand over the setup checklist. Use when someone wants to start a new app for a team, or types /ai-sdlc:new-app."
+description: "Engineers: create a new yolo-sdlc app (Nuxt UI + Cloudflare, risk tiers, engineer review) in a new folder, with the right UI shell for its type, then hand over the setup checklist. Use when someone wants to start a new app for a team, or types /yolo-sdlc:new-app."
 ---
 
-# /ai-sdlc:new-app: start a new app
+# /yolo-sdlc:new-app: start a new app
 
-This is an **engineer** step. It creates the repo that non-engineers then work in with `/ai-sdlc:idea` → `/ai-sdlc:ship`.
+This is an **engineer** step. It creates the repo that non-engineers then work in with `/yolo-sdlc:idea` → `/yolo-sdlc:ship`.
 
 ## Steps
 
@@ -33,4 +33,4 @@ This is an **engineer** step. It creates the repo that non-engineers then work i
 
 4. **Hand over** `docs/SETUP.md` as a checklist, in plain words: the GitHub repo and its ruleset, Cloudflare D1/KV, Access or Turnstile, the two Workers Builds, and the owner's machine. Offer to do the parts that can be done from here (for example `gh repo create`), and ask before each one, since they create things in their accounts.
 
-5. **Next:** once it's set up, the owner opens the folder in Claude. The `ai-sdlc` plugin is enabled by the repo's settings, and they start with `/ai-sdlc:idea`.
+5. **Next:** once it's set up, the owner opens the folder in Claude. The `yolo-sdlc` plugin is enabled by the repo's settings, and they start with `/yolo-sdlc:idea`.

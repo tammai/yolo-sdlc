@@ -24,7 +24,7 @@ const only = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--bud
 const scenarios = JSON.parse(readFileSync(join(here, 'behavior', 'scenarios.json'), 'utf8')).filter((s) => !only.length || only.includes(s.id))
 
 // Short paths: deep folders break pnpm on Windows.
-const work = join(homedir(), 'apps', '.ai-sdlc-evals')
+const work = join(homedir(), 'apps', '.yolo-sdlc-evals')
 const base = join(work, 'base')
 const git = (cwd, ...a) => execFileSync('git', a, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
 
@@ -162,7 +162,7 @@ for (const s of scenarios) {
       encoding: 'utf8',
       timeout: (s.timeoutMinutes ?? 15) * 60_000,
       // No shell: the prompt must reach claude as one argument, spaces and quotes intact.
-      env: { ...process.env, CLOUDFLARE_API_TOKEN: 'ai-sdlc-eval-invalid', CLOUDFLARE_ACCOUNT_ID: '0', EXAMPLES_PORT: String(examplesPort) },
+      env: { ...process.env, CLOUDFLARE_API_TOKEN: 'yolo-sdlc-eval-invalid', CLOUDFLARE_ACCOUNT_ID: '0', EXAMPLES_PORT: String(examplesPort) },
     },
   )
   let reply = ''

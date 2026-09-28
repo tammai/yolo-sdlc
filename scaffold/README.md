@@ -19,11 +19,11 @@ Five skills, always in this order. Each one moves the idea's file, `intent/<slug
 
 | Skill | What happens |
 | --- | --- |
-| `/ai-sdlc:idea` | The person's problem in their own words, at most 5 questions. Nothing is built. |
-| `/ai-sdlc:shape` | 2–5 examples ("When I …, I see …") that they explicitly approve |
-| `/ai-sdlc:build` | Technical plan, a plan review before any code (yellow/red), then an implementer builds (checks first) and a fresh verifier audits it against the intent, up to 3 rounds |
-| `/ai-sdlc:check` | A screenshot next to each example: "Is this what you wanted?" |
-| `/ai-sdlc:ship` | Engineer review on the local commit, then push once, open the pull request, post the review, merge. The pipeline deploys. |
+| `/yolo-sdlc:idea` | The person's problem in their own words, at most 5 questions. Nothing is built. |
+| `/yolo-sdlc:shape` | 2–5 examples ("When I …, I see …") that they explicitly approve |
+| `/yolo-sdlc:build` | Technical plan, a plan review before any code (yellow/red), then an implementer builds (checks first) and a fresh verifier audits it against the intent, up to 3 rounds |
+| `/yolo-sdlc:check` | A screenshot next to each example: "Is this what you wanted?" |
+| `/yolo-sdlc:ship` | Engineer review on the local commit, then push once, open the pull request, post the review, merge. The pipeline deploys. |
 
 ## Risk tiers and review
 
@@ -35,9 +35,9 @@ A deterministic script (`scripts/risk-tier/`) decides every change's tier. It ru
 | 🟡 yellow | new stored data, new server routes, changed checks | the engineer review |
 | 🔴 red | personal data, outside services, new libraries, sign-in, engineer-owned files | the engineer review |
 
-**The engineer review** runs in the person's own Claude session at `/ai-sdlc:ship`, before anything is pushed:
-- A separate `ai-sdlc:engineer-reviewer` subagent (from the ai-sdlc plugin) reviews the branch against `REVIEW.md` with a fresh context. It isn't told what was built or why.
-- Its findings are **warnings, never blockers**. `/ai-sdlc:ship` offers to fix them, and each fix gets a new review.
+**The engineer review** runs in the person's own Claude session at `/yolo-sdlc:ship`, before anything is pushed:
+- A separate `yolo-sdlc:engineer-reviewer` subagent (from the yolo-sdlc plugin) reviews the branch against `REVIEW.md` with a fresh context. It isn't told what was built or why.
+- Its findings are **warnings, never blockers**. `/yolo-sdlc:ship` offers to fix them, and each fix gets a new review.
 - The review is posted on the pull request for the exact commit it read. The merge gate accepts it only for the PR's current commit.
 - It's a **record, not a lock**, so the hard limits are elsewhere: the session hook blocks secrets, destructive migrations, deploys and edits to engineer-owned files; production refuses to run anything not deployed from `main`; and `"claudeReview": false` in `app.registry.json` hands yellow and red back to people.
 

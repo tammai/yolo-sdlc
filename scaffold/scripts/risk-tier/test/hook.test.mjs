@@ -132,8 +132,8 @@ test('bash: a yellow/red branch can only be pushed after the engineer review of 
   try {
     assert.ok(denied(run('pre', 'Bash', push)), 'no review yet: blocked')
     const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: dir, encoding: 'utf8' }).trim()
-    mkdirSync(join(dir, '.git', 'ai-sdlc-review'), { recursive: true })
-    const saved = join(dir, '.git', 'ai-sdlc-review', `${head}.json`)
+    mkdirSync(join(dir, '.git', 'yolo-sdlc-review'), { recursive: true })
+    const saved = join(dir, '.git', 'yolo-sdlc-review', `${head}.json`)
     writeFileSync(saved, '{}')
     assert.ok(denied(run('pre', 'Bash', push)), 'an empty file is not a review')
     writeFileSync(saved, JSON.stringify({ sha: 'a'.repeat(40), summary: 'Fine.', warnings: [] }))

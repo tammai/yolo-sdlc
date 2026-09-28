@@ -1,14 +1,14 @@
 {
   "extraKnownMarketplaces": {
-    "ai-sdlc": {
+    "yolo-sdlc": {
       "source": {
         "source": "github",
-        "repo": "tammai/ai-sdlc"
+        "repo": "tammai/yolo-sdlc"
       }
     }
   },
   "enabledPlugins": {
-    "ai-sdlc@ai-sdlc": true
+    "yolo-sdlc@yolo-sdlc": true
   },
   "hooks": {
     "PreToolUse": [

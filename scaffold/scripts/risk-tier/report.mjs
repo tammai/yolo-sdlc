@@ -10,12 +10,12 @@ export const TIER_MEANING = {
   yellow: {
     icon: '🟡',
     title: 'Needs a review',
-    text: 'This changes what the app stores or how its server handles data. A separate Claude reviewer checks it at /ai-sdlc:ship and lists any warnings before it goes live.',
+    text: 'This changes what the app stores or how its server handles data. A separate Claude reviewer checks it at /yolo-sdlc:ship and lists any warnings before it goes live.',
   },
   red: {
     icon: '🔴',
     title: 'Needs an engineer review',
-    text: 'This touches something where a mistake is costly: personal data, sign-in, outside services, libraries or live infrastructure. A separate Claude reviewer checks it closely at /ai-sdlc:ship and lists any warnings before it goes live.',
+    text: 'This touches something where a mistake is costly: personal data, sign-in, outside services, libraries or live infrastructure. A separate Claude reviewer checks it closely at /yolo-sdlc:ship and lists any warnings before it goes live.',
   },
 }
 
@@ -59,7 +59,7 @@ export function formatReport({ tier, findings, escalated }, decision, review) {
     if (!decision.pass && tier !== 'green') {
       lines.push(
         '',
-        'To clear it, run **/ai-sdlc:ship** in Claude on this branch: it runs the engineer review and posts it here. Or a reviewer approves the pull request, then adds the `recheck-risk` label.',
+        'To clear it, run **/yolo-sdlc:ship** in Claude on this branch: it runs the engineer review and posts it here. Or a reviewer approves the pull request, then adds the `recheck-risk` label.',
       )
     }
   }

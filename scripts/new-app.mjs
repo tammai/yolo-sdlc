@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// /ai-sdlc:new-app. Creates a new app from scaffold/:
+// /yolo-sdlc:new-app. Creates a new app from scaffold/:
 //   node new-app.mjs <dir> --name <kebab-name> --type <internal|public|prototype> --data <public|internal|personal>
 // Copies the scaffold, fills in the app's name and type, installs the matching UI template,
 // and makes the first git commit. Engineer setup (Cloudflare, GitHub) follows docs/SETUP.md.
@@ -56,13 +56,13 @@ export function createApp(dir, { name, type, data, git = true }) {
   // The UI shell for this type (dashboard / landing / starter), with its dependencies and content.
   execFileSync(process.execPath, [join(target, 'scripts', 'ui-template.mjs')], { cwd: target, stdio: 'ignore' })
 
-  writeFileSync(join(target, '.ai-sdlc.json'), JSON.stringify({ plugin: 'ai-sdlc', version: pluginVersion() }, null, 2) + '\n')
+  writeFileSync(join(target, '.yolo-sdlc.json'), JSON.stringify({ plugin: 'yolo-sdlc', version: pluginVersion() }, null, 2) + '\n')
 
   if (git) {
     const g = (...args) => execFileSync('git', args, { cwd: target, stdio: 'ignore' })
     g('init', '-q', '-b', 'main')
     g('add', '-A')
-    g('commit', '-q', '-m', `Start ${name} from ai-sdlc ${pluginVersion()}`)
+    g('commit', '-q', '-m', `Start ${name} from yolo-sdlc ${pluginVersion()}`)
   }
   return { target, template: JSON.parse(readFileSync(join(target, 'layers/ui/.template.json'), 'utf8')).name }
 }

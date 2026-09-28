@@ -57,7 +57,7 @@
         "POLICIES.md",
         "LEARNED.md",
         "docs/**",
-        ".ai-sdlc.json",
+        ".yolo-sdlc.json",
         "layers/**",
         "ui-templates/**",
         "content.config.ts",
@@ -115,7 +115,7 @@
       "added": "\\b\\w*(?:email|phone|mobile|address|birth|dob|ssn|passport|national_?id|id_?number|salary|wage|payroll|bank|iban|account_?number|tax|gender|religion|ethnic|health|medical|diagnosis|disability)\\w*\\b",
       "flags": "i",
       "why": "This stores information about real people (such as contact details, pay or health). Personal data has legal rules about who may see it and how long it is kept.",
-      "next": "The engineer review at /ai-sdlc:ship will check who can see this data and how it is protected."
+      "next": "The engineer review at /yolo-sdlc:ship will check who can see this data and how it is protected."
     },
     {
       "id": "external-service",
@@ -130,7 +130,7 @@
       "added": "(?:\\$?fetch|ofetch|useFetch|axios(?:\\.\\w+)?|useScript)\\s*\\(\\s*[`'\"]https?://([^/'\"`\\s:]+)|<script[^>]*\\ssrc\\s*=\\s*[\"']https?://([^/\"'\\s:]+)|\\bsrc\\s*:\\s*[\"']https?://([^/\"'\\s:]+)|\\.src\\s*=\\s*[`'\"]https?://([^/`'\"\\s:]+)",
       "flags": "i",
       "why": "This sends data to, or loads code from, a service outside the company (for example tracking scripts or another company's API).",
-      "next": "The engineer review at /ai-sdlc:ship will check what data leaves and whether we have an agreement with that service."
+      "next": "The engineer review at /yolo-sdlc:ship will check what data leaves and whether we have an agreement with that service."
     },
     {
       "id": "external-service",
@@ -145,7 +145,7 @@
       "added": "[`'\"]https?://([^/'\"`\\s:$]+)",
       "flags": "i",
       "why": "This sends data to, or loads code from, a service outside the company (for example tracking scripts or another company's API).",
-      "next": "The engineer review at /ai-sdlc:ship will check what data leaves and whether we have an agreement with that service.",
+      "next": "The engineer review at /yolo-sdlc:ship will check what data leaves and whether we have an agreement with that service.",
       "$comment": "Data code: any outside URL counts, however it is called (e.g. api = useRequestFetch(); api(url))."
     },
     {
@@ -159,7 +159,7 @@
       "added": "\\b(?:resend|sendgrid|mailgun|postmark|nodemailer|mailchannels|send_email|sendEmail)\\b",
       "flags": "i",
       "why": "The app would send email. Emails reach real people and can't be taken back.",
-      "next": "The engineer review at /ai-sdlc:ship will check who receives it and how sending is limited."
+      "next": "The engineer review at /yolo-sdlc:ship will check who receives it and how sending is limited."
     },
     {
       "id": "unprotected-write",
@@ -193,7 +193,7 @@
       ],
       "added": "^\\s*\"[^\"]+\"\\s*:\\s*\"(?:[~^<>=]*\\d|npm:|git|https?:|file:|link:|workspace:|latest|\\*)",
       "why": "This adds or changes a third-party library. Libraries run with full access to the app and its data.",
-      "next": "The engineer review at /ai-sdlc:ship will check the library is trustworthy and maintained."
+      "next": "The engineer review at /yolo-sdlc:ship will check the library is trustworthy and maintained."
     },
     {
       "id": "lockfile",
@@ -202,7 +202,7 @@
         "pnpm-lock.yaml"
       ],
       "why": "The exact library versions changed.",
-      "next": "The engineer review at /ai-sdlc:ship checks which libraries changed and why."
+      "next": "The engineer review at /yolo-sdlc:ship checks which libraries changed and why."
     },
     {
       "id": "app-config",
@@ -211,7 +211,7 @@
         "nuxt.config.ts"
       ],
       "why": "This changes how the app is built.",
-      "next": "The engineer review at /ai-sdlc:ship checks the change is needed and safe."
+      "next": "The engineer review at /yolo-sdlc:ship checks the change is needed and safe."
     },
     {
       "id": "database-change",
@@ -221,7 +221,7 @@
         "migrations/*.sql"
       ],
       "why": "This changes what the app stores in its database.",
-      "next": "The engineer review at /ai-sdlc:ship checks the new data looks right."
+      "next": "The engineer review at /yolo-sdlc:ship checks the new data looks right."
     },
     {
       "id": "server-route",
@@ -231,7 +231,7 @@
         "server/routes/**"
       ],
       "why": "This changes what the app's server does with data.",
-      "next": "The engineer review at /ai-sdlc:ship checks it behaves as expected."
+      "next": "The engineer review at /yolo-sdlc:ship checks it behaves as expected."
     },
     {
       "id": "checks-changed",
@@ -246,7 +246,7 @@
         "renamed"
       ],
       "why": "An existing automatic check was changed or removed, so it might no longer check what was agreed.",
-      "next": "The engineer review at /ai-sdlc:ship checks the examples still say what they approved."
+      "next": "The engineer review at /yolo-sdlc:ship checks the examples still say what they approved."
     }
   ]
 }

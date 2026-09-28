@@ -7,7 +7,7 @@ For engineers. Something that just went live is wrong, and people are affected. 
 | Situation | Do |
 | --- | --- |
 | People can't use the app, or data is being lost or exposed | **Roll back now**, then fix forward |
-| Something looks or reads wrong, but works | **Fix forward:** start a normal change with `/ai-sdlc:idea` |
+| Something looks or reads wrong, but works | **Fix forward:** start a normal change with `/yolo-sdlc:idea` |
 | The last deploy added a database migration | Read step 3 before rolling back |
 
 ## 2. Roll back the code
@@ -29,7 +29,7 @@ Migrations only ever **add** tables and columns (the risk rules block anything e
 A rollback doesn't change `main`, so the next merge would deploy the bad code again.
 1. Revert the change on `main`: `git revert <merge-commit>` on a branch, then a pull request. The revert goes through the normal gate.
 2. Or fix forward on a branch, before anything else merges.
-3. Write a short note in the change's intent file, under **Open questions**: what went wrong and how it was found. `/ai-sdlc:learn` picks these up.
+3. Write a short note in the change's intent file, under **Open questions**: what went wrong and how it was found. `/yolo-sdlc:learn` picks these up.
 
 ## 5. Tell people
 

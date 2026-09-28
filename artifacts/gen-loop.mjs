@@ -9,9 +9,9 @@ const PAD = 16
 const BANDS = [
   { stage: '1  Plan', h: 90 },
   { stage: '2  Design', h: 90 },
-  { stage: '3  Build', caption: '/ai-sdlc:build', h: 364 },
+  { stage: '3  Build', caption: '/yolo-sdlc:build', h: 364 },
   { stage: '4  Test', h: 90 },
-  { stage: '5  Deploy', caption: '/ai-sdlc:ship', h: 270 },
+  { stage: '5  Deploy', caption: '/yolo-sdlc:ship', h: 270 },
   { stage: '6  Maintain', h: 90 },
 ]
 let y = PAD
@@ -59,7 +59,7 @@ const label = (x, y, t, anchor) => `  <text class="label" x="${x}" y="${y}"${anc
 const down = (a, b) => edge(`M${MC},${a} V${b}`)
 
 const aria =
-  "The ai-sdlc loop, in the playbook's six stages. Plan: /ai-sdlc:idea writes the problem in the person's words. Design: /ai-sdlc:shape agrees 2 to 5 examples. Build: a technical plan is written; if the change is yellow or red, a plan review happens before any code, otherwise it goes straight to the implementer; the implementer writes checks first, then code; a fresh verifier audits the diff against the intent, and on FAIL the work goes back to the implementer, up to 3 rounds. Test: on PASS, /ai-sdlc:check shows screenshots; if it is not quite right, it goes back to shape. Deploy: if the change is yellow or red, an engineer review of the local commit happens first; then the merge gate on GitHub checks the exact commit, and the deploy guard lets only main go live. Maintain: Report a problem on every page stores each report; an engineer runs /ai-sdlc:triage, which turns new reports into draft intents, each the next idea, back at Plan."
+  "The yolo-sdlc loop, in the playbook's six stages. Plan: /yolo-sdlc:idea writes the problem in the person's words. Design: /yolo-sdlc:shape agrees 2 to 5 examples. Build: a technical plan is written; if the change is yellow or red, a plan review happens before any code, otherwise it goes straight to the implementer; the implementer writes checks first, then code; a fresh verifier audits the diff against the intent, and on FAIL the work goes back to the implementer, up to 3 rounds. Test: on PASS, /yolo-sdlc:check shows screenshots; if it is not quite right, it goes back to shape. Deploy: if the change is yellow or red, an engineer review of the local commit happens first; then the merge gate on GitHub checks the exact commit, and the deploy guard lets only main go live. Maintain: Report a problem on every page stores each report; an engineer runs /yolo-sdlc:triage, which turns new reports into draft intents, each the next idea, back at Plan."
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${aria}">
   <style>
@@ -93,20 +93,20 @@ ${BANDS.map((b) => `  <path class="band" d="${rr(8, b.top, W - 16, b.h, 10)}" />
 ${BANDS.map((b) => `  <text class="stage" x="24" y="${b.top + 28}">${esc(b.stage)}</text>${b.caption ? `\n  <text class="caption" x="24" y="${b.top + 46}">${esc(b.caption)}</text>` : ''}`).join('\n')}
 
   <!-- Boxes -->
-${rect(A, 'box-accent', '/ai-sdlc:idea', 'the problem, in their words')}
-${rect(B, 'box-accent', '/ai-sdlc:shape', 'agree 2–5 examples')}
+${rect(A, 'box-accent', '/yolo-sdlc:idea', 'the problem, in their words')}
+${rect(B, 'box-accent', '/yolo-sdlc:shape', 'agree 2–5 examples')}
 ${rect(C, 'box', 'technical plan', 'in the intent file')}
 ${diamond(D1, 'yellow / red?')}
 ${rect(P, 'box', 'plan review', 'before any code')}
 ${rect(M, 'box', 'implementer', 'checks first, then code')}
 ${rect(V, 'box', 'fresh verifier', 'audits the diff vs the intent')}
-${rect(D, 'box-accent', '/ai-sdlc:check', 'screenshots: is this it?')}
+${rect(D, 'box-accent', '/yolo-sdlc:check', 'screenshots: is this it?')}
 ${diamond(D2, 'yellow / red?')}
 ${rect(F, 'box', 'engineer review', 'of the local commit')}
 ${rect(G, 'box', 'merge gate', 'GitHub, exact commit')}
 ${rect(Hh, 'box', 'deploy guard', 'only main goes live')}
 ${rect(I, 'box-accent', 'Report a problem', 'on every page')}
-${rect(T, 'box', '/ai-sdlc:triage', 'reports → draft intents')}
+${rect(T, 'box', '/yolo-sdlc:triage', 'reports → draft intents')}
 
   <!-- Forward edges, main column -->
 ${down(A.y + BH, B.y)}

@@ -1,7 +1,7 @@
 # Engineer review policy
 
-Engineer-owned (red tier). The `ai-sdlc:engineer-reviewer` subagent (from the ai-sdlc plugin) follows this file when
-`/ai-sdlc:ship` runs it on a yellow or red change. Human engineers follow it too.
+Engineer-owned (red tier). The `yolo-sdlc:engineer-reviewer` subagent (from the yolo-sdlc plugin) follows this file when
+`/yolo-sdlc:ship` runs it on a yellow or red change. Human engineers follow it too.
 
 The author is usually not an engineer. They agreed on examples in `intent/*.md`, and Claude built them.
 The review checks whether the change is safe to go live and **warns** about anything that isn't. Warnings never stop a change: they're shown on the pull request, and the author's Claude offers to fix them before merging. The review doesn't judge taste or style.

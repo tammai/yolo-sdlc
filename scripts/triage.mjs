@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// /ai-sdlc:triage. The Maintain loop: problem reports from the live app that no intent has
+// /yolo-sdlc:triage. The Maintain loop: problem reports from the live app that no intent has
 // picked up yet. Reads the live database with one fixed, read-only query (engineers only),
 // leaves out reports already listed in an intent's `reports:` field, and prints the rest as
 // JSON for Claude to group into draft intents.
@@ -56,7 +56,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     raw = readFileSync(from, 'utf8')
   } else {
     if (process.env.RISK_TIER_ROLE !== 'engineer') {
-      console.error('Reading problem reports from the live app is for engineers (RISK_TIER_ROLE=engineer). Ask an engineer to run /ai-sdlc:triage.')
+      console.error('Reading problem reports from the live app is for engineers (RISK_TIER_ROLE=engineer). Ask an engineer to run /yolo-sdlc:triage.')
       process.exit(2)
     }
     // wrangler's own entry file, run by node: no shell, so the query stays one argument on Windows too.

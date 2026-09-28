@@ -79,7 +79,7 @@ Then open one test pull request to check that the `risk-tier` comment and label 
 
 ## 5b. The engineer review
 
-Yellow and red changes are reviewed in the author's own Claude session at `/ai-sdlc:ship`, by a separate `ai-sdlc:engineer-reviewer` subagent that didn't write the change. It checks the branch against `REVIEW.md`, and its findings are **warnings**: the author's Claude offers to fix them, then posts the review on the pull request (`pnpm review:post`). The merge gate lets the change through when a review exists for the pull request's current commit.
+Yellow and red changes are reviewed in the author's own Claude session at `/yolo-sdlc:ship`, by a separate `yolo-sdlc:engineer-reviewer` subagent that didn't write the change. It checks the branch against `REVIEW.md`, and its findings are **warnings**: the author's Claude offers to fix them, then posts the review on the pull request (`pnpm review:post`). The merge gate lets the change through when a review exists for the pull request's current commit.
 
 - No API key or setup needed: it runs on the author's Claude.
 - The review comment is a **record, not a lock**. Anyone with write access could post one by hand. The hard protections are the session hook, the risk tiers and the main-only deploy guard.
@@ -121,16 +121,16 @@ Deploy it through the Claude admin console, or as `managed-settings.json` in the
 
 ## 8. Policies and lessons
 
-- **`POLICIES.md`**: your organisation's rules for what apps may do, such as personal data, retention, outside services and announcements. `/ai-sdlc:shape` checks every idea against it and records **Policy concerns** in the intent. `/ai-sdlc:build` won't start while a sign-off is pending, and the engineer review checks the result. The file ships with starter policies: replace them with yours, and have legal, HR or security confirm them.
-- **`LEARNED.md`**: lessons from this app's own history. `CLAUDE.md` imports it, and the reviewer reads its **For review** section. Run `/ai-sdlc:learn` now and then (monthly, say): it gathers repeated verifier issues and review warnings and proposes one-line lessons, which you approve.
+- **`POLICIES.md`**: your organisation's rules for what apps may do, such as personal data, retention, outside services and announcements. `/yolo-sdlc:shape` checks every idea against it and records **Policy concerns** in the intent. `/yolo-sdlc:build` won't start while a sign-off is pending, and the engineer review checks the result. The file ships with starter policies: replace them with yours, and have legal, HR or security confirm them.
+- **`LEARNED.md`**: lessons from this app's own history. `CLAUDE.md` imports it, and the reviewer reads its **For review** section. Run `/yolo-sdlc:learn` now and then (monthly, say): it gathers repeated verifier issues and review warnings and proposes one-line lessons, which you approve.
 
-Both files belong to the app, and `/ai-sdlc:update-app` only creates them when they're missing. Both are engineer-owned.
+Both files belong to the app, and `/yolo-sdlc:update-app` only creates them when they're missing. Both are engineer-owned.
 
 ## 9. When something goes wrong in production
 
 Follow `docs/ROLLBACK.md`. Rolling back is always done by an engineer, never from a Claude session.
 
-Run `/ai-sdlc:triage` to turn **Report a problem** submissions into draft intents, and `/ai-sdlc:report` for per-stage delivery metrics. Triage reads only each report's id, message, page and date, never who sent it, with one fixed query. The messages still enter the engineer's Claude session, so don't use it on an app whose reports may contain sensitive details. Any other read of live data happens in the engineer's own terminal: the session hook blocks every `--remote` database command.
+Run `/yolo-sdlc:triage` to turn **Report a problem** submissions into draft intents, and `/yolo-sdlc:report` for per-stage delivery metrics. Triage reads only each report's id, message, page and date, never who sent it, with one fixed query. The messages still enter the engineer's Claude session, so don't use it on an app whose reports may contain sensitive details. Any other read of live data happens in the engineer's own terminal: the session hook blocks every `--remote` database command.
 
 ## What each layer is for
 

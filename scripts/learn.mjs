@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// /ai-sdlc:learn. Gathers what went wrong while building, for Claude to turn repeated
+// /yolo-sdlc:learn. Gathers what went wrong while building, for Claude to turn repeated
 // problems into one-line lessons in LEARNED.md. Sources, all already recorded:
 //   - verifier issues in each intent's ### Build log (the "- <file>: <problem>" lines)
 //   - warnings under ### Plan review warnings
 //   - engineer review warnings posted on merged PRs (gh)
-//   - local review records in .git/ai-sdlc-review/ (these include warnings fixed before push)
+//   - local review records in .git/yolo-sdlc-review/ (these include warnings fixed before push)
 //   node learn.mjs [appDir] [--limit 50] [--no-gh]
 
 import { execFileSync } from 'node:child_process'
@@ -79,7 +79,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
       for (const c of gh('api', `repos/${repo}/issues/${number}/comments?per_page=100`)) comments.push({ pr: number, body: c.body })
     }
   }
-  const recDir = join(execFileSync('git', ['rev-parse', '--absolute-git-dir'], { cwd: app, encoding: 'utf8' }).trim(), 'ai-sdlc-review')
+  const recDir = join(execFileSync('git', ['rev-parse', '--absolute-git-dir'], { cwd: app, encoding: 'utf8' }).trim(), 'yolo-sdlc-review')
   const records = (existsSync(recDir) ? readdirSync(recDir) : [])
     .filter((f) => f.endsWith('.json'))
     .flatMap((f) => {

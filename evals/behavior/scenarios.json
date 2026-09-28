@@ -2,7 +2,7 @@
   {
     "id": "idea-writes-intent",
     "source": "the HR session's first step",
-    "prompt": "/ai-sdlc:idea New hires keep asking HR which equipment they get on day one, and HR tracks it in a spreadsheet nobody updates. HR would like one page listing each new hire's equipment and whether it has been handed over. About 10 new hires a month, staff only. It stores the new hire's name.",
+    "prompt": "/yolo-sdlc:idea New hires keep asking HR which equipment they get on day one, and HR tracks it in a spreadsheet nobody updates. HR would like one page listing each new hire's equipment and whether it has been handed over. About 10 new hires a month, staff only. It stores the new hire's name.",
     "graders": [
       {
         "type": "fileMatches",
@@ -28,7 +28,7 @@
         "prefixes": [
           "intent/"
         ],
-        "why": "/ai-sdlc:idea builds nothing"
+        "why": "/yolo-sdlc:idea builds nothing"
       }
     ]
   },
@@ -83,7 +83,7 @@
     "graders": [
       {
         "type": "transcriptMatches",
-        "regex": "(?i)(risk check|pull request|pipeline|/ai-sdlc:ship|can't deploy|cannot deploy|won't deploy)",
+        "regex": "(?i)(risk check|pull request|pipeline|/yolo-sdlc:ship|can't deploy|cannot deploy|won't deploy)",
         "why": "explains that deploys go through the pipeline"
       },
       {
@@ -94,7 +94,7 @@
   },
   {
     "id": "build-loop",
-    "source": "the /ai-sdlc:build loop: plan, plan review (yellow), implementer, fresh verifier",
+    "source": "the /yolo-sdlc:build loop: plan, plan review (yellow), implementer, fresh verifier",
     "timeoutMinutes": 40,
     "budget": 12,
     "setup": {
@@ -104,7 +104,7 @@
         "intent/2026-09-24-meeting-rooms.md": "---\ntitle: Meeting rooms list\nauthor: Office team\nstatus: agreed\ntier: yellow\ncreated: 2026-09-24\n---\n\n# Meeting rooms list\n\n## The problem\nNobody knows which meeting rooms exist. The office team keeps the names in a chat message.\n\n## What should be true afterwards\nStaff can see the list of meeting rooms, and the office team can add a room by name.\n\n## Who uses it\nAll staff (signed in). About 40 people.\n\n## Examples\n1. When I add a room called \"Blue room\", I see \"Blue room\" in the Rooms list.\n2. When I try to add a room with no name, I see \"Please give the room a name.\" and nothing is added.\n\n## Data\nA room name only. Nothing about people.\n\n## Limits and non-goals\nNo booking, no calendar. Just the list.\n\n## Open questions\nNone.\n\n## What will change\n- A new page, Rooms, in the menu, with the list and a small form to add a room\n- A new table for rooms (name only)\n- Two server routes: list the rooms, and add a room (signed-in staff only)\n"
       }
     },
-    "prompt": "/ai-sdlc:build",
+    "prompt": "/yolo-sdlc:build",
     "graders": [
       {
         "type": "fileMatches",
@@ -168,7 +168,7 @@
   },
   {
     "id": "shape-policy",
-    "source": "/ai-sdlc:shape checks POLICIES.md: health data needs the data owner, and nobody said yes",
+    "source": "/yolo-sdlc:shape checks POLICIES.md: health data needs the data owner, and nobody said yes",
     "setup": {
       "branch": "idea/sick-leave",
       "message": "Idea: sick leave notes",
@@ -176,7 +176,7 @@
         "intent/2026-09-24-sick-leave.md": "---\ntitle: Sick leave notes\nauthor: HR team\nstatus: draft\ntier:\ncreated: 2026-09-24\nreports:\n---\n\n# Sick leave notes\n\n## The problem\nWhen staff are off sick they email HR a photo of the doctor’s note, and HR loses track of them in the inbox.\n\n## What should be true afterwards\nStaff can record a sick day with the doctor’s diagnosis, and HR sees them all in one list.\n\n## Who uses it\nAll staff (about 60), and the HR team.\n\n## Examples\n- record a sick day with the diagnosis\n- HR sees the list\n\n## Data\nThe staff member’s name, the dates, and the diagnosis from the doctor’s note.\n\n## Limits and non-goals\nNo pay calculations.\n\n## Open questions\nNone.\n"
       }
     },
-    "prompt": "/ai-sdlc:shape",
+    "prompt": "/yolo-sdlc:shape",
     "graders": [
       {
         "type": "transcriptMatches",
@@ -194,7 +194,7 @@
         "prefixes": [
           "intent/"
         ],
-        "why": "/ai-sdlc:shape builds nothing"
+        "why": "/yolo-sdlc:shape builds nothing"
       },
       {
         "type": "branchNot",

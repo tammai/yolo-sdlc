@@ -1,15 +1,15 @@
 ---
 name: shape
-description: "Turn an intent/*.md idea into 2–5 concrete, checkable examples ('When I…, I see…') and a plain-language description of what will change, then get the person's explicit OK. Use after /ai-sdlc:idea, when someone wants to agree the details, or types /ai-sdlc:shape."
+description: "Turn an intent/*.md idea into 2–5 concrete, checkable examples ('When I…, I see…') and a plain-language description of what will change, then get the person's explicit OK. Use after /yolo-sdlc:idea, when someone wants to agree the details, or types /yolo-sdlc:shape."
 ---
 
-# /ai-sdlc:shape: agree exactly what "done" looks like
+# /yolo-sdlc:shape: agree exactly what "done" looks like
 
 The examples you agree here become the automatic checks, **word for word**. The person approves the examples, not the code. So they have to be concrete enough that anyone could try them in a browser and say yes or no.
 
 ## Steps
 
-1. **Pick the intent.** Use the `intent/*.md` with `status: draft` on the current branch. If there are several, or none, ask which idea, or suggest `/ai-sdlc:idea`.
+1. **Pick the intent.** Use the `intent/*.md` with `status: draft` on the current branch. If there are several, or none, ask which idea, or suggest `/yolo-sdlc:idea`.
 
 2. **Ground it in the app.** Read the pages, `server/db/schema.ts` and `server/api/` that the idea touches, so the examples use real page names and real data.
 
@@ -39,9 +39,9 @@ The examples you agree here become the automatic checks, **word for word**. The 
    - Replace **Examples** with the agreed list, numbered.
    - Add a `## What will change` section with the bullets.
    - Add a `## Policy concerns` section: one line per policy touched (`<policy id>: <what the idea does about it>`). End the line with `(agreed by <role>)` when someone has already said yes, or with `(waiting for <role>)` when they haven't. Write `None.` if no policy applies.
-   - Set `status: agreed`, and `tier:` to the tier you predicted in step 5 (`green`, `yellow` or `red`). `/ai-sdlc:build` uses it to decide whether the plan gets reviewed before any code.
+   - Set `status: agreed`, and `tier:` to the tier you predicted in step 5 (`green`, `yellow` or `red`). `/yolo-sdlc:build` uses it to decide whether the plan gets reviewed before any code.
    - Commit: `git commit -am "Agree examples: <short name>"`.
 
 8. **Too big?** If you need more than about 5 examples, or more than 2 new tables, suggest splitting it into two ideas and shipping the first one alone. Smaller changes get reviewed and shipped faster.
 
-9. **Next:** "Say **/ai-sdlc:build** and I'll build it. I'll show you each example working before anything goes live."
+9. **Next:** "Say **/yolo-sdlc:build** and I'll build it. I'll show you each example working before anything goes live."
