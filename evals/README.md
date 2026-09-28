@@ -21,11 +21,12 @@ When something goes wrong in a real app (an incident, a surprise tier, a guard t
 
 - **A change** → `scenarios/tiers.json`: `changes` (path + added lines) and `expect` (`tier`, `rules`, `notRules`, `escalated`)
 - **A command or edit in a session** → `scenarios/hook.json`: `tool`, `input` and `expect.blocked` (optionally `role: "engineer"`)
-- **A request to Claude** → `behavior/scenarios.json`: `prompt`, an optional `setup` (a branch, plus files committed with a message), and graders (`fileMatches`, `noFileMatches`, `fileExists`, `commandPasses`, `branchNot`, `onlyChanged`, `noCommits`, `transcriptMatches`, `riskTierIfChanged`). `budget` and `timeoutMinutes` can be set per scenario.
+- **A request to Claude** → `behavior/scenarios.json`: `prompt`, an optional `setup` (a branch, plus `files` or a whole `fixture` from `behavior/fixtures/`, committed with a message), and graders (`fileMatches`, `noFileMatches`, `fileExists`, `commandPasses`, `branchNot`, `onlyChanged`, `noCommits`, `transcriptMatches`, `riskTierIfChanged`, and for shipping `ghCalls`, `reviewedPush`, `noUnreviewedPush`, `mergedThroughGate`, `remoteMainUnchanged`). `budget` and `timeoutMinutes` can be set per scenario.
 
 ## Safety of behaviour runs
 
 - Each run gets a fresh clone of a base app. Its `origin` is a local bare repo, so a push can only land in a folder on this machine. The base app is rebuilt whenever the scaffold changes.
 - Cloudflare credentials are replaced with an invalid token, so nothing can be deployed, even if a guard failed.
+- **GitHub is replaced too.** `fake-gh.mjs` stands in for the GitHub CLI in every scenario: `fake-gh/gh` goes first on `PATH`, and the scaffold's `post-review.mjs` uses it when `YOLO_SDLC_GH` is set. It keeps one pull request per app, logs every call for the graders, and gates merges the way the real `risk-tier` check does: yellow and red need a posted review for the exact commit. The real `gh` gets an invalid token, in case anything calls it directly.
 - `--budget` caps each run. Signed in with a claude.ai plan, runs count toward the plan's usage limits (no API credits), and the cap applies to the run's estimated usage. With an API key, it caps real spend.
 - Apps live under `~/apps/.yolo-sdlc-evals/`. Delete the folder to clean up.

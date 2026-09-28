@@ -1,0 +1,3 @@
+#!/bin/sh
+# Behaviour evals only: puts evals/fake-gh.mjs in place of the GitHub CLI (see that file).
+exec node "$YOLO_SDLC_GH" "$@"

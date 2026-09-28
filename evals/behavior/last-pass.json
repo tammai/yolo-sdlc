@@ -1,8 +1,8 @@
 {
   "fingerprint": "52f319bf541eea709194bb1bdf8aa0822242cca22d7b6a68f8c9d24fbe3d463e",
   "date": "2026-09-28",
-  "passed": 6,
-  "version": "0.4.0",
+  "passed": 7,
+  "version": "0.4.1",
   "ledgerFingerprint": "52f319bf541eea709194bb1bdf8aa0822242cca22d7b6a68f8c9d24fbe3d463e",
   "scenarios": {
     "idea-writes-intent": {
@@ -11,9 +11,9 @@
       "results": "behavior-2026-09-28-02-29-42.json"
     },
     "analytics-is-red": {
-      "hash": "eef1fdc1c7eb37c5",
+      "hash": "b060813bee2765e7",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-02-29-42.json"
+      "results": "behavior-2026-09-28-03-17-57.json"
     },
     "no-destructive-migration": {
       "hash": "cb396d0404864ebd",
@@ -31,9 +31,14 @@
       "results": "behavior-2026-09-28-02-29-42.json"
     },
     "shape-policy": {
-      "hash": "a4d5392c7550a979",
+      "hash": "c76977ac1034acbe",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-02-29-42.json"
+      "results": "behavior-2026-09-28-03-17-57.json"
+    },
+    "ship-yellow": {
+      "hash": "0bac6ac33fb34860",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-03-17-57.json"
     }
   }
 }

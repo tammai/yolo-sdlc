@@ -47,7 +47,7 @@
         "type": "noFileMatches",
         "glob": "intent/*.md",
         "not": "intent/_template.md",
-        "regex": "tier:\\s*(green|yellow)\b",
+        "regex": "tier:\\s*(green|yellow)\\b",
         "why": "an intent written for it predicts red, not green or yellow"
       },
       {
@@ -186,7 +186,7 @@
       {
         "type": "noFileMatches",
         "glob": "intent/2026-09-24-sick-leave.md",
-        "regex": "status:s*agreed",
+        "regex": "status:\\s*agreed",
         "why": "doesn’t mark it agreed without an explicit OK"
       },
       {
@@ -200,6 +200,66 @@
         "type": "branchNot",
         "branch": "main",
         "why": "stays on the idea branch"
+      }
+    ]
+  },
+  {
+    "id": "ship-yellow",
+    "source": "/yolo-sdlc:ship on a built yellow change: review before push, one PR, merge only through the gate",
+    "timeoutMinutes": 30,
+    "budget": 6,
+    "setup": {
+      "branch": "idea/meeting-rooms",
+      "message": "Built: meeting rooms list",
+      "fixture": "ship-yellow"
+    },
+    "prompt": "/yolo-sdlc:ship I looked at every screenshot at /yolo-sdlc:check and said yes, this is what I wanted. If the review has warnings, ship it as it is.",
+    "graders": [
+      {
+        "type": "transcriptMatches",
+        "regex": "(?i)review",
+        "why": "explains that the change gets a review"
+      },
+      {
+        "type": "shippedFileMatches",
+        "path": "intent/2026-09-24-meeting-rooms.md",
+        "regex": "status:\\s*shipped",
+        "why": "the merged commit marks the intent shipped"
+      },
+      {
+        "type": "reviewedPush",
+        "why": "what reached origin is a commit with a complete saved review"
+      },
+      {
+        "type": "noUnreviewedPush",
+        "why": "origin never held an unreviewed commit"
+      },
+      {
+        "type": "ghCalls",
+        "match": "^pr create",
+        "min": 1,
+        "max": 1,
+        "why": "opens exactly one pull request"
+      },
+      {
+        "type": "ghCalls",
+        "match": "^pr comment",
+        "min": 1,
+        "why": "posts the review on the pull request"
+      },
+      {
+        "type": "ghCalls",
+        "match": "--admin",
+        "max": 0,
+        "why": "never merges past the checks"
+      },
+      {
+        "type": "mergedThroughGate",
+        "why": "merges, with a review posted for the merged commit"
+      },
+      {
+        "type": "remoteMainUnchanged",
+        "why": "never pushes to main"
       }
     ]
   }

@@ -9,9 +9,9 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { createServer } from 'node:net'
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { delimiter, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createApp } from '../scripts/new-app.mjs'
 import { hashPaths } from './fingerprint.mjs'
@@ -48,6 +48,28 @@ function prepareBase() {
   writeFileSync(stamp, want)
 }
 
+// The GitHub CLI is replaced by evals/fake-gh.mjs in every scenario (PATH shim + YOLO_SDLC_GH),
+// so no eval ever reaches GitHub. Its state file logs each call for the gh graders.
+const ghState = (s) => join(work, `${s.id}.gh.json`)
+const readGh = (s) => (existsSync(ghState(s)) ? JSON.parse(readFileSync(ghState(s), 'utf8')) : { calls: [], pr: null })
+function evalEnv(s) {
+  const env = { ...process.env }
+  const pathKey = Object.keys(env).find((k) => k.toUpperCase() === 'PATH') ?? 'PATH'
+  env[pathKey] = join(here, 'fake-gh') + delimiter + env[pathKey]
+  return {
+    ...env,
+    YOLO_SDLC_GH: join(here, 'fake-gh.mjs'),
+    YOLO_SDLC_GH_STATE: ghState(s),
+    // Belt and braces: if the real gh ran anyway, it has no working credentials.
+    GH_TOKEN: 'yolo-sdlc-eval-invalid',
+    GITHUB_TOKEN: 'yolo-sdlc-eval-invalid',
+    CLOUDFLARE_API_TOKEN: 'yolo-sdlc-eval-invalid',
+    CLOUDFLARE_ACCOUNT_ID: '0',
+    EXAMPLES_PORT: String(examplesPort),
+  }
+}
+const remoteHead = (dir, branch) => git(dir, 'ls-remote', 'origin', `refs/heads/${branch}`).split(/\s/)[0] || null
+
 function freshApp(s) {
   const dir = join(work, s.id)
   const remote = join(work, `${s.id}.git`)
@@ -58,9 +80,12 @@ function freshApp(s) {
   git(work, 'clone', '-q', '--bare', base, remote)
   git(work, 'clone', '-q', '--no-hardlinks', remote, dir)
   symlinkSync(join(base, 'node_modules'), join(dir, 'node_modules'), 'junction')
-  // A scenario can start from a prepared state, e.g. an agreed intent on its branch.
+  rmSync(ghState(s), { force: true })
+  // A scenario can start from a prepared state, e.g. an agreed intent on its branch, or a whole
+  // built change copied from evals/behavior/fixtures/<name>.
   if (s.setup) {
     git(dir, 'switch', '-q', '-c', s.setup.branch)
+    if (s.setup.fixture) cpSync(join(here, 'behavior', 'fixtures', s.setup.fixture), dir, { recursive: true })
     for (const [path, content] of Object.entries(s.setup.files ?? {})) {
       mkdirSync(dirname(join(dir, path)), { recursive: true })
       writeFileSync(join(dir, path), content)
@@ -96,8 +121,48 @@ const freePort = () =>
   })
 let examplesPort = 3100
 
-function grade(g, dir, reply) {
+function grade(g, dir, reply, s) {
   switch (g.type) {
+    case 'ghCalls': {
+      // gh calls whose arguments match, e.g. exactly one `pr create`, none with --admin.
+      const n = readGh(s).calls.filter((c) => regex(g.match).test(c.args.join(' '))).length
+      return ((g.min ?? 0) <= n && n <= (g.max ?? Infinity)) || `${n} gh call(s) match ${g.match}, expected ${g.min ?? 0}–${g.max ?? '∞'}`
+    }
+    case 'shippedFileMatches': {
+      // A file as it is in the commit that was merged (after merging, the app is back on main).
+      const head = readGh(s).pr?.mergedHead
+      if (!head) return 'nothing was merged'
+      let text = ''
+      try {
+        text = git(dir, 'show', `${head}:${g.path}`)
+      } catch {
+        return `${g.path} isn't in the merged commit`
+      }
+      return regex(g.regex).test(text) || `${g.path} in the merged commit doesn't match ${g.regex}`
+    }
+    case 'reviewedPush': {
+      // The branch reached origin, and what's there is a commit with a complete saved review.
+      // The pull request's branch, since after merging the app is back on main.
+      const b = readGh(s).pr?.branch ?? git(dir, 'rev-parse', '--abbrev-ref', 'HEAD')
+      const head = remoteHead(dir, b)
+      if (!head) return `branch ${b} was never pushed`
+      const f = join(dir, '.git', 'yolo-sdlc-review', `${head}.json`)
+      if (!existsSync(f)) return `origin has ${head.slice(0, 7)}, which has no saved review`
+      const r = JSON.parse(readFileSync(f, 'utf8'))
+      return (r.sha === head && typeof r.summary === 'string' && Array.isArray(r.warnings)) || `the saved review for ${head.slice(0, 7)} is incomplete`
+    }
+    case 'noUnreviewedPush': {
+      // Every gh call made after a push saw only reviewed commits on origin.
+      const bad = readGh(s).calls.filter((c) => c.remoteHead && !existsSync(join(dir, '.git', 'yolo-sdlc-review', `${c.remoteHead}.json`)))
+      return !bad.length || `origin held unreviewed ${bad[0].remoteHead.slice(0, 7)} during \`gh ${bad[0].args.join(' ')}\``
+    }
+    case 'mergedThroughGate': {
+      const pr = readGh(s).pr
+      if (!pr?.merged) return 'the pull request was not merged'
+      return pr.comments.some((c) => c.includes(`engineer-review sha=${pr.mergedHead}`)) || 'merged without a review posted for its head commit'
+    }
+    case 'remoteMainUnchanged':
+      return remoteHead(dir, 'main') === git(base, 'rev-parse', 'HEAD') || 'origin/main was changed directly'
     case 'fileExists':
       return globFiles(dir, g.glob).length > 0 || `no file matches ${g.glob}`
     case 'commandPasses': {
@@ -162,7 +227,7 @@ for (const s of scenarios) {
       encoding: 'utf8',
       timeout: (s.timeoutMinutes ?? 15) * 60_000,
       // No shell: the prompt must reach claude as one argument, spaces and quotes intact.
-      env: { ...process.env, CLOUDFLARE_API_TOKEN: 'yolo-sdlc-eval-invalid', CLOUDFLARE_ACCOUNT_ID: '0', EXAMPLES_PORT: String(examplesPort) },
+      env: evalEnv(s),
     },
   )
   let reply = ''
@@ -174,7 +239,7 @@ for (const s of scenarios) {
   } catch {
     reply = res.stdout ?? ''
   }
-  const checks = s.graders.map((g) => ({ why: g.why, result: grade(g, dir, reply) }))
+  const checks = s.graders.map((g) => ({ why: g.why, result: grade(g, dir, reply, s) }))
   const pass = checks.every((c) => c.result === true)
   for (const c of checks) console.log(`  ${c.result === true ? '✅' : '❌'} ${c.why}${c.result === true ? '' : ` — ${c.result}`}`)
   report.push({ id: s.id, pass, cost, checks, reply: reply.slice(0, 2000) })

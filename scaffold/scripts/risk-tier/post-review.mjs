@@ -11,7 +11,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { formatReviewComment, validateReview } from './review-record.mjs'
 
-const run = (cmd, args) => execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+const run = (cmd, args) => {
+  // Test seam: the plugin's behaviour evals set YOLO_SDLC_GH to a stand-in for the GitHub CLI
+  // (evals/fake-gh.mjs), so an eval never reaches GitHub. Unset everywhere else.
+  const [file, argv] = cmd === 'gh' && process.env.YOLO_SDLC_GH ? [process.execPath, [process.env.YOLO_SDLC_GH, ...args]] : [cmd, args]
+  return execFileSync(file, argv, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+}
 const stop = (msg) => {
   console.error(`✋ ${msg}`)
   process.exit(1)
