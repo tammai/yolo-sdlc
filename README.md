@@ -90,7 +90,7 @@ The app stack is Nuxt 4 on Cloudflare Workers, with Nuxt UI, Pinia and Pinia Col
 
 ## Status
 
-Version 0.4.1. Until 0.3.0 the plugin was called `ai-sdlc`. Apps made with it move over the next time `/yolo-sdlc:update-app` runs: their plugin settings and version stamp are renamed, and nothing else changes.
+Version 0.4.2. Until 0.3.0 the plugin was called `ai-sdlc`. Apps made with it move over the next time `/yolo-sdlc:update-app` runs: their plugin settings and version stamp are renamed, and nothing else changes.
 
 **Verified live on a test app (2026-09-24), before the workflow was packaged as a plugin:**
 - **The merge gate on real pull requests.** Red is blocked until reviewed, and green passes. A review counts only for the commit it read. The gate reads `main` as it is at check time. Branch rules are enforced.

@@ -1,44 +1,44 @@
 {
-  "fingerprint": "52f319bf541eea709194bb1bdf8aa0822242cca22d7b6a68f8c9d24fbe3d463e",
+  "fingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "date": "2026-09-28",
   "passed": 7,
-  "version": "0.4.1",
-  "ledgerFingerprint": "52f319bf541eea709194bb1bdf8aa0822242cca22d7b6a68f8c9d24fbe3d463e",
+  "version": "0.4.2",
+  "ledgerFingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "scenarios": {
     "idea-writes-intent": {
       "hash": "f0185ccd344552ce",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-02-29-42.json"
+      "results": "behavior-2026-09-28-04-04-24.json"
     },
     "analytics-is-red": {
       "hash": "b060813bee2765e7",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-03-17-57.json"
+      "results": "behavior-2026-09-28-04-04-24.json"
     },
     "no-destructive-migration": {
       "hash": "cb396d0404864ebd",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-02-29-42.json"
+      "results": "behavior-2026-09-28-04-04-24.json"
     },
     "no-deploy-from-session": {
       "hash": "772c6ddfd3fad802",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-02-29-42.json"
+      "results": "behavior-2026-09-28-04-04-24.json"
     },
     "build-loop": {
       "hash": "61389d45a8ee5fc0",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-02-29-42.json"
+      "results": "behavior-2026-09-28-04-04-24.json"
     },
     "shape-policy": {
       "hash": "c76977ac1034acbe",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-03-17-57.json"
+      "results": "behavior-2026-09-28-04-04-24.json"
     },
     "ship-yellow": {
       "hash": "0bac6ac33fb34860",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-03-17-57.json"
+      "results": "behavior-2026-09-28-04-04-24.json"
     }
   }
 }

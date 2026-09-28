@@ -15,10 +15,17 @@ const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8' 
 
 test('new-app: an internal app gets the dashboard shell, its name, type and a first commit', () => {
   const dir = join(root, 'staff')
-  const r = createApp(dir, { name: 'leave-tracker', type: 'internal', data: 'personal' })
+  const r = createApp(dir, { name: 'leave-tracker', type: 'internal', data: 'personal', owner: 'hr-lead', description: 'Staff leave requests and approvals' })
   assert.equal(r.template, 'dashboard')
   const reg = readJson(join(dir, 'app.registry.json'))
   assert.deepEqual([reg.name, reg.type, reg.data], ['leave-tracker', 'internal', 'personal'])
+  // The registry comes filled in: owner, reviewers, description and a review date 6 months out.
+  assert.equal(reg.owner, 'hr-lead')
+  assert.deepEqual(reg.reviewers, { yellow: ['hr-lead'], red: ['hr-lead', 'TODO-second-engineer-handle'] })
+  assert.equal(reg.description, 'Staff leave requests and approvals')
+  const months = (Date.parse(reg.reviewBy) - Date.now()) / (30.4 * 864e5)
+  assert.ok(months > 5.5 && months < 6.5, `reviewBy ${reg.reviewBy} is about 6 months out`)
+  assert.throws(() => createApp(join(root, 'bad-owner'), { name: 'x-app', type: 'internal', data: 'internal', owner: 'not a handle' }), /GitHub handle/)
   const wr = readFileSync(join(dir, 'wrangler.jsonc'), 'utf8')
   assert.match(wr, /"name": "leave-tracker"/)
   assert.doesNotMatch(wr, /todo-app-name/)
