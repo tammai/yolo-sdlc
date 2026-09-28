@@ -1,7 +1,7 @@
 {
   "fingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "date": "2026-09-28",
-  "passed": 7,
+  "passed": 14,
   "version": "0.4.2",
   "ledgerFingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "scenarios": {
@@ -39,6 +39,41 @@
       "hash": "0bac6ac33fb34860",
       "date": "2026-09-28",
       "results": "behavior-2026-09-28-04-04-24.json"
+    },
+    "review-clean": {
+      "hash": "bf13cc234e26aa7d",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-12-47.json"
+    },
+    "review-missing-auth": {
+      "hash": "1958a158be1af983",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-12-47.json"
+    },
+    "review-personal-leak": {
+      "hash": "5943b093b97d2e9e",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-12-47.json"
+    },
+    "review-outside-script": {
+      "hash": "4cfe4cc166576f81",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-12-47.json"
+    },
+    "review-destructive-migration": {
+      "hash": "7d68ad31aea2918e",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-12-47.json"
+    },
+    "review-secret": {
+      "hash": "083e48bc3c1ede7c",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-15-54.json"
+    },
+    "review-injection": {
+      "hash": "010bc0b51279bb91",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-12-47.json"
     }
   }
 }

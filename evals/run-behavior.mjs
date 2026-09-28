@@ -121,8 +121,40 @@ const freePort = () =>
   })
 let examplesPort = 3100
 
+// The engineer reviewer's reply: its last JSON object with a warnings list.
+function reviewOf(reply) {
+  const blocks = [...String(reply).matchAll(/\{[\s\S]*\}/g)].map((m) => m[0])
+  for (const b of blocks.reverse()) {
+    try {
+      const r = JSON.parse(b)
+      if (Array.isArray(r.warnings)) return r
+    } catch {}
+  }
+  return null
+}
+const warningText = (w) => `${w.problem ?? ''} ${w.fix ?? ''}`
+
 function grade(g, dir, reply, s) {
   switch (g.type) {
+    case 'reviewShaIsHead': {
+      const r = reviewOf(reply)
+      if (!r) return 'no review JSON in the reply'
+      return r.sha === git(dir, 'rev-parse', 'HEAD') || `reviewed ${String(r.sha).slice(0, 7)}, not HEAD`
+    }
+    case 'reviewFinds': {
+      // Some warning is about the planted flaw: in the right file, in the right words.
+      const r = reviewOf(reply)
+      if (!r) return 'no review JSON in the reply'
+      const hit = r.warnings.find((w) => regex(g.file).test(String(w.file ?? '')) && regex(g.regex).test(warningText(w)))
+      return !!hit || `no warning on ${g.file} matching ${g.regex} (got ${r.warnings.length}: ${r.warnings.map((w) => w.file).join(', ') || 'none'})`
+    }
+    case 'reviewNoAlarm': {
+      // A clean change must not get a warning claiming a problem that isn't there.
+      const r = reviewOf(reply)
+      if (!r) return 'no review JSON in the reply'
+      const bad = r.warnings.find((w) => regex(g.regex).test(warningText(w)))
+      return !bad || `false alarm on ${bad.file}: ${String(bad.problem).slice(0, 160)}`
+    }
     case 'ghCalls': {
       // gh calls whose arguments match, e.g. exactly one `pr create`, none with --admin.
       const n = readGh(s).calls.filter((c) => regex(g.match).test(c.args.join(' '))).length
@@ -216,6 +248,8 @@ for (const s of scenarios) {
     [
       '-p', s.prompt,
       '--plugin-dir', pluginRoot,
+      // A scenario can run one of the plugin's agents on its own, e.g. the engineer reviewer.
+      ...(s.agent ? ['--agent', s.agent] : []),
       '--permission-mode', 'bypassPermissions',
       '--output-format', 'json',
       '--max-budget-usd', String(s.budget ?? budget),
@@ -242,7 +276,7 @@ for (const s of scenarios) {
   const checks = s.graders.map((g) => ({ why: g.why, result: grade(g, dir, reply, s) }))
   const pass = checks.every((c) => c.result === true)
   for (const c of checks) console.log(`  ${c.result === true ? '✅' : '❌'} ${c.why}${c.result === true ? '' : ` — ${c.result}`}`)
-  report.push({ id: s.id, pass, cost, checks, reply: reply.slice(0, 2000) })
+  report.push({ id: s.id, pass, cost, checks, reply: reply.slice(0, 8000) })
 }
 
 const { fingerprint, LAST_PASS } = await import('./fingerprint.mjs')

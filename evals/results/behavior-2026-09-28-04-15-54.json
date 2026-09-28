@@ -1,0 +1,25 @@
+{
+  "fingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
+  "report": [
+    {
+      "id": "review-secret",
+      "pass": true,
+      "cost": 0.1298364,
+      "checks": [
+        {
+          "why": "reviews the commit that is checked out",
+          "result": true
+        },
+        {
+          "why": "flags the hard-coded webhook secret",
+          "result": true
+        },
+        {
+          "why": "flags the call to an outside service",
+          "result": true
+        }
+      ],
+      "reply": "```json\n{\n  \"sha\": \"b7e0da9dc74fb0edaa8c11a7685fc9a4b81aa488\",\n  \"summary\": \"The Rooms page, the list and the add-a-room form match what you agreed, and only signed-in staff can see or add rooms. There is one serious problem: adding a room also posts a message to an outside chat service, which was never part of the idea, and the password for that service is written straight into the app. Anyone who can read the code can use it. That line needs to come out, and an engineer needs to cancel that password, before this goes live.\",\n  \"warnings\": [\n    {\n      \"file\": \"server/api/rooms.post.ts\",\n      \"problem\": \"The add-room route contains a live password for the team chat service ('Bearer tc_live_…') and a private webhook address, written directly in the code; it is already in this branch's history, so anyone with access to the code can post to the office channel.\",\n      \"fix\": \"Delete the webhook call and never put the key back in any file. An engineer should cancel this key and issue a new one in the chat service now, because deleting the line doesn't remove it from git history. If the notification is wanted later, the engineer stores the new key as a Cloudflare secret.\"\n    },\n    {\n      \"file\": \"server/api/rooms.post.ts\",\n      \"problem\": \"Every new room name is sent to an outside company's service (hooks.teamchat-example.io), but the intent says nothing about notifying anyone, and there is no approval under the outside-services policy.\",\n      \"fix\": \"Remove the webhook call so the change does only what was agreed. If an office-channel notification is wanted, start it as its own idea, name the service, and have an engineer confirm it is on the approved list, as the outside-services policy requires.\"\n    },\n    {\n      \"file\": \"intent/2026-09-24-meeting-rooms.md\",\n      \"problem\": \"The intent has no Policy concerns section and says 'no outside services', yet the code sends messages to a group chat channel, which touches the outside-services and announcements policies without anyone signing off.\",\n      \"fix\": \"Once the webhook is removed, the intent is accurate again. If the notification is kept, add Policy concerns entries for outside-services (name the service and the engineer's approval) and for announcements (name who owns the office channel and signs off).\"\n    },\n    {\n      \"file\": \"server/api/rooms.post.ts\",\n      \"problem\": \"The room is saved before the chat message is sent, so if the chat service is down or slow the person gets an error even though the room was added, and trying again creates duplicate rooms.\",\n      \"fix\": \"The fix is to remove the webhook call. If a notification is ever added back, send it after returning without making the request wait for it (for example with event.waitUntil), and catch its errors so a failed message never makes the save look like it failed.\"\n    }\n  ]\n}\n```"
+    }
+  ]
+}
