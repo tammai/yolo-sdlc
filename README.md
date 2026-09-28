@@ -102,7 +102,7 @@ Version 0.4.2. Until 0.3.0 the plugin was called `ai-sdlc`. Apps made with it mo
 
 **Checked by evals** (see [evals/README.md](evals/README.md)):
 - **Scenario evals** replay real incidents against the risk rules and the session hook: deterministic, and run in CI.
-- **Behaviour evals** run the skills headless in throwaway apps: an idea becomes an intent; analytics is red; no destructive migration; no deploy from a session; the full build loop builds an agreed intent, and its checks pass; shipping a yellow change reviews it before push, opens one pull request and merges only through the gate (against a stand-in for GitHub). The engineer reviewer catches each of six planted flaws (missing sign-in, leaked emails, a tracking script, a dropped table, a hard-coded secret, and an instruction to the reviewer hidden in the intent), and raises no false alarms on a clean change.
+- **Behaviour evals** run the skills headless in throwaway apps: an idea becomes an intent; analytics is red; no destructive migration; no deploy from a session; the full build loop builds an agreed intent, and its checks pass; shipping a yellow change reviews it before push, opens one pull request and merges only through the gate (against a stand-in for GitHub). The engineer reviewer catches each of six planted flaws (missing sign-in, leaked emails, a tracking script, a dropped table, a hard-coded secret, and an instruction to the reviewer hidden in the intent), and raises no false alarms on a clean change. Its plan review, before any code, catches five planted plan flaws the same way.
 - CI fails if a skill or agent changed since the behaviour evals last passed.
 
 **Not yet verified:**

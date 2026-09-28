@@ -1,7 +1,7 @@
 {
   "fingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "date": "2026-09-28",
-  "passed": 14,
+  "passed": 20,
   "version": "0.4.2",
   "ledgerFingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "scenarios": {
@@ -38,7 +38,7 @@
     "ship-yellow": {
       "hash": "0bac6ac33fb34860",
       "date": "2026-09-28",
-      "results": "behavior-2026-09-28-04-04-24.json"
+      "results": "behavior-2026-09-28-04-33-44.json"
     },
     "review-clean": {
       "hash": "bf13cc234e26aa7d",
@@ -74,6 +74,36 @@
       "hash": "010bc0b51279bb91",
       "date": "2026-09-28",
       "results": "behavior-2026-09-28-04-12-47.json"
+    },
+    "plan-clean": {
+      "hash": "0a1823c934a12b11",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-33-44.json"
+    },
+    "plan-no-auth": {
+      "hash": "200d2b2af50ff68a",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-33-44.json"
+    },
+    "plan-destructive-schema": {
+      "hash": "edeed6ccbf6d97cb",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-33-44.json"
+    },
+    "plan-personal-data": {
+      "hash": "539cb0a2780ad7c0",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-33-44.json"
+    },
+    "plan-outside-service": {
+      "hash": "b2f1c087b3a7e73e",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-33-44.json"
+    },
+    "plan-missed-example": {
+      "hash": "d82c6b7afd9f359f",
+      "date": "2026-09-28",
+      "results": "behavior-2026-09-28-04-33-44.json"
     }
   }
 }

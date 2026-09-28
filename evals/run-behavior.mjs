@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Behaviour evals: realistic requests run through headless Claude Code with this plugin loaded,
 // each in a throwaway app, graded only on what ends up in the repo and the reply.
-//   node evals/run-behavior.mjs [scenario-id ...] [--budget 2]
+//   node evals/run-behavior.mjs [scenario-id ...] [--budget 2] [--jobs 3]
 // Costs real Claude usage, so it runs on demand (before a release, after changing skills),
 // never in CI. Safety: each app's origin is a local bare repo, and Cloudflare credentials are
 // replaced with an invalid token, so nothing can reach GitHub or be deployed even if a guard failed.
 
-import { execFileSync, spawnSync } from 'node:child_process'
+import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { createServer } from 'node:net'
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
@@ -20,7 +20,9 @@ const here = dirname(fileURLToPath(import.meta.url))
 const pluginRoot = join(here, '..')
 const args = process.argv.slice(2)
 const budget = args.includes('--budget') ? args[args.indexOf('--budget') + 1] : '2'
-const only = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--budget')
+// Scenarios run side by side (default 3). The ones that start the app's dev server take turns.
+const jobs = Math.max(1, Number(args.includes('--jobs') ? args[args.indexOf('--jobs') + 1] : 3) || 1)
+const only = args.filter((a, i) => !a.startsWith('--') && !['--budget', '--jobs'].includes(args[i - 1]))
 const scenarios = JSON.parse(readFileSync(join(here, 'behavior', 'scenarios.json'), 'utf8')).filter((s) => !only.length || only.includes(s.id))
 
 // Short paths: deep folders break pnpm on Windows.
@@ -65,7 +67,7 @@ function evalEnv(s) {
     GITHUB_TOKEN: 'yolo-sdlc-eval-invalid',
     CLOUDFLARE_API_TOKEN: 'yolo-sdlc-eval-invalid',
     CLOUDFLARE_ACCOUNT_ID: '0',
-    EXAMPLES_PORT: String(examplesPort),
+    EXAMPLES_PORT: String(ports.get(s.id) ?? 3100),
   }
 }
 const remoteHead = (dir, branch) => git(dir, 'ls-remote', 'origin', `refs/heads/${branch}`).split(/\s/)[0] || null
@@ -119,7 +121,41 @@ const freePort = () =>
       srv.close(() => ok(port))
     })
   })
-let examplesPort = 3100
+const ports = new Map() // scenario id → its free port
+
+// A child process as a promise, so scenarios run side by side without blocking each other.
+function run(cmd, argv, { timeoutMs, ...opts }) {
+  return new Promise((resolve) => {
+    const child = spawn(cmd, argv, { ...opts, stdio: ['ignore', 'pipe', 'pipe'] })
+    let stdout = ''
+    let stderr = ''
+    child.stdout.setEncoding('utf8')
+    child.stderr.setEncoding('utf8')
+    child.stdout.on('data', (d) => (stdout += d))
+    child.stderr.on('data', (d) => (stderr += d))
+    const timer = timeoutMs ? setTimeout(() => child.kill(), timeoutMs) : null
+    child.on('close', (status) => {
+      if (timer) clearTimeout(timer)
+      resolve({ status, stdout, stderr })
+    })
+    child.on('error', (err) => {
+      if (timer) clearTimeout(timer)
+      resolve({ status: -1, stdout, stderr: String(err) })
+    })
+  })
+}
+
+// Scenarios that start the app's dev server share Vite's cache through the linked
+// node_modules, so they take turns: one at a time, while the others keep running.
+let devServerTurn = Promise.resolve()
+const startsDevServer = (s) => s.graders.some((g) => g.type === 'commandPasses') || s.id === 'ship-yellow' || s.devServer === true
+function takeTurn() {
+  let release
+  const mine = new Promise((r) => (release = r))
+  const wait = devServerTurn
+  devServerTurn = devServerTurn.then(() => mine)
+  return wait.then(() => release)
+}
 
 // The engineer reviewer's reply: its last JSON object with a warnings list.
 function reviewOf(reply) {
@@ -199,8 +235,9 @@ function grade(g, dir, reply, s) {
       return globFiles(dir, g.glob).length > 0 || `no file matches ${g.glob}`
     case 'commandPasses': {
       // e.g. pnpm typecheck, or the new example checks: run for real in the eval app.
-      const r = spawnSync(g.command, { cwd: dir, shell: true, encoding: 'utf8', timeout: 10 * 60_000, env: { ...process.env, EXAMPLES_PORT: String(examplesPort) } })
-      return r.status === 0 || `\`${g.command}\` exited ${r.status}: ${(r.stdout + r.stderr).trim().split('\n').slice(-3).join(' | ')}`
+      return run(g.command, [], { cwd: dir, shell: true, timeoutMs: 10 * 60_000, env: { ...process.env, EXAMPLES_PORT: String(ports.get(s.id)) } }).then(
+        (r) => r.status === 0 || `\`${g.command}\` exited ${r.status}: ${(r.stdout + r.stderr).trim().split('\n').slice(-3).join(' | ')}`,
+      )
     }
     case 'fileMatches': {
       const files = globFiles(dir, g.glob).filter((f) => f !== g.not)
@@ -237,13 +274,20 @@ function grade(g, dir, reply, s) {
   }
 }
 
-prepareBase()
-const report = []
-for (const s of scenarios) {
+async function runScenario(s) {
+  const release = startsDevServer(s) ? await takeTurn() : () => {}
+  try {
+    return await runOne(s)
+  } finally {
+    release()
+  }
+}
+
+async function runOne(s) {
   const dir = freshApp(s)
-  examplesPort = await freePort()
-  console.log(`\n▶ ${s.id}: ${s.source}`)
-  const res = spawnSync(
+  ports.set(s.id, await freePort())
+  console.log(`… started ${s.id}`)
+  const res = await run(
     'claude',
     [
       '-p', s.prompt,
@@ -258,8 +302,7 @@ for (const s of scenarios) {
     ],
     {
       cwd: dir,
-      encoding: 'utf8',
-      timeout: (s.timeoutMinutes ?? 15) * 60_000,
+      timeoutMs: (s.timeoutMinutes ?? 15) * 60_000,
       // No shell: the prompt must reach claude as one argument, spaces and quotes intact.
       env: evalEnv(s),
     },
@@ -273,11 +316,28 @@ for (const s of scenarios) {
   } catch {
     reply = res.stdout ?? ''
   }
-  const checks = s.graders.map((g) => ({ why: g.why, result: grade(g, dir, reply, s) }))
+  const checks = []
+  for (const g of s.graders) checks.push({ why: g.why, result: await grade(g, dir, reply, s) })
   const pass = checks.every((c) => c.result === true)
-  for (const c of checks) console.log(`  ${c.result === true ? '✅' : '❌'} ${c.why}${c.result === true ? '' : ` — ${c.result}`}`)
-  report.push({ id: s.id, pass, cost, checks, reply: reply.slice(0, 8000) })
+  // One block per scenario, printed when it finishes, so parallel runs don't interleave.
+  console.log(
+    [`\n▶ ${s.id}: ${s.source}`, ...checks.map((c) => `  ${c.result === true ? '✅' : '❌'} ${c.why}${c.result === true ? '' : ` — ${c.result}`}`)].join('\n'),
+  )
+  return { id: s.id, pass, cost, checks, reply: reply.slice(0, 8000) }
 }
+
+prepareBase()
+// A small pool: `jobs` scenarios at a time; results keep the scenarios' order.
+const report = new Array(scenarios.length)
+let next = 0
+await Promise.all(
+  Array.from({ length: Math.min(jobs, scenarios.length) }, async () => {
+    while (next < scenarios.length) {
+      const i = next++
+      report[i] = await runScenario(scenarios[i])
+    }
+  }),
+)
 
 const { fingerprint, LAST_PASS } = await import('./fingerprint.mjs')
 const fp = fingerprint()

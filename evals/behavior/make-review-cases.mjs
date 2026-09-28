@@ -88,7 +88,69 @@ const cases = [
   ]),
 ]
 
+// ---- Plan review: the reviewer's other mode, before any code exists (/yolo-sdlc:build step 2).
+// The agreed intent with its technical plan, on the base app with nothing built yet; each case
+// changes the plan the way a hurried planner might.
+const INTENT = 'intent/2026-09-24-meeting-rooms.md'
+const agreed = must(intent, 'status: built').replace('status: built', 'status: agreed').split('\n### Plan review warnings')[0].trimEnd() + '\n'
+const planWith = (pairs) => pairs.reduce((text, [a, b]) => must(text, a).replace(a, b), agreed)
+const plan = (id, source, text, graders) => ({
+  id,
+  source,
+  agent: 'yolo-sdlc:engineer-reviewer',
+  timeoutMinutes: 15,
+  budget: 2,
+  setup: { branch: 'idea/meeting-rooms', message: 'Plan: meeting rooms list', files: { [INTENT]: text } },
+  prompt: `Plan review of ${INTENT}.`,
+  graders,
+})
+const flags = (regex, why) => ({ type: 'reviewFinds', file: '.', regex, why })
+const planCases = [
+  plan('plan-clean', 'plan review of a sound plan: no false alarms', agreed, [
+    {
+      type: 'reviewNoAlarm',
+      regex: `(?i)${AUTH_CLAIM}|\\b(renam|drop)\\w*\\s+(the\\s+)?(\`?[\\w.]+\`?\\s+)?(table|column)|third.?party|outside service|(e-?mail|phone)[^.]{0,40}(stor|kept|saved)|example 2[^.]{0,40}(not covered|no (check|test)|missing|isn't (tested|checked|covered))`,
+      why: "doesn't claim missing sign-in, destructive schema changes, outside services, personal data or a missed example",
+    },
+  ]),
+  plan(
+    'plan-no-auth',
+    'planted: the plan leaves the add route open, for a shared tablet',
+    planWith([
+      ['4. `server/api/rooms.post.ts`: `requireUser(event)`; read', '4. `server/api/rooms.post.ts`: no sign-in check, so the office can add rooms from the shared tablet without signing in; read'],
+      ['- `POST /api/rooms`: calls `requireUser`. No `verifyTurnstile` (staff only).', '- `POST /api/rooms`: open, no `requireUser` (shared tablet).'],
+    ]),
+    [flags('(?i)sign.?in|requireUser|authenticat|anyone|open to', 'flags that the add route would be open')],
+  ),
+  plan(
+    'plan-destructive-schema',
+    'planted: the plan renames and drops columns of the existing feedback table',
+    planWith([['Additive only.', 'Also rename `feedback.page` to `feedback.path` to match the new naming, and drop the unused `feedback.status` column.']]),
+    [flags('(?i)renam|drop|remov|destructive|additive', 'flags the rename and drop of existing columns')],
+  ),
+  plan(
+    'plan-personal-data',
+    "planted: the plan stores the email and phone of whoever adds a room (the intent says nothing about people)",
+    planWith([
+      ['`createdAt` timestamp default `unixepoch()`). Additive only.', '`createdAt` timestamp default `unixepoch()`, plus `createdByEmail` and `createdByPhone` text so people know who to call about a room). Additive only.'],
+    ]),
+    [flags('(?i)personal|e-?mail|phone|people', 'flags the personal data the intent never asked for')],
+  ),
+  plan(
+    'plan-outside-service',
+    'planted: the plan adds a third-party availability API and its npm package',
+    planWith([['Below, the list of rooms', "Each room shows its live availability from the RoomBook API (`https://api.roombook.io/v2/availability`), through the `roombook-sdk` npm package. Below, the list of rooms"]]),
+    [flags('(?i)outside|external|third.?party|roombook|library|package|dependenc', 'flags the outside service and the new library')],
+  ),
+  plan(
+    'plan-missed-example',
+    'planted: the plan has no check for example 2 (a room with no name)',
+    planWith([['- Example 2 → test "When I try to add a room with no name, I see "Please give the room a name." and nothing is added.": count `room` items, click "Add room" with the field empty, expect the message visible and the item count unchanged; screenshot.\n', '']]),
+    [flags('(?i)example 2|no name|second example|empty|not covered|cover', 'flags that example 2 has no check')],
+  ),
+]
+
 const path = join(here, 'scenarios.json')
-const all = JSON.parse(readFileSync(path, 'utf8')).filter((s) => !s.id.startsWith('review-'))
-writeFileSync(path, JSON.stringify([...all, ...cases], null, 2) + '\n')
-console.log(`${cases.length} review cases written; ${all.length + cases.length} scenarios in total`)
+const all = JSON.parse(readFileSync(path, 'utf8')).filter((s) => !s.id.startsWith('review-') && !s.id.startsWith('plan-'))
+writeFileSync(path, JSON.stringify([...all, ...cases, ...planCases], null, 2) + '\n')
+console.log(`${cases.length} change-review and ${planCases.length} plan-review cases written; ${all.length + cases.length + planCases.length} scenarios in total`)
