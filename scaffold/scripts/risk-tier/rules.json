@@ -50,6 +50,8 @@
         "scripts/**",
         "wrangler.jsonc",
         "wrangler.toml",
+        "wrangler.config.ts",
+        "cloudflare.config.ts",
         "app.registry.json",
         "CLAUDE.md",
         "drizzle.config.ts",

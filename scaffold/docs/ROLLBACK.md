@@ -1,6 +1,6 @@
 # Rolling back
 
-For engineers. Something that just went live is wrong, and people are affected. Rolling back is **never done from a Claude session**: the hook blocks `wrangler rollback` and every online `cf` command, and that's deliberate. Do it yourself, with your own credentials.
+For engineers. Something that just went live is wrong, and people are affected. Rolling back is **never done from a Claude session**: the hook blocks every online `cf` command (and `wrangler rollback`), and that's deliberate. Do it yourself, with your own credentials.
 
 ## 1. Decide: roll back or fix forward
 
@@ -16,7 +16,14 @@ Either way works. Both go back to a build that came from `main`, so the deploy g
 
 - **Cloudflare dashboard** (easiest): Workers & Pages → the production Worker → **Deployments** → the last good version → **Rollback**.
 - **Retry an older build:** Workers & Pages → the Worker → **Builds** → the last good `main` build → **Retry build**.
-- **Command line**, from your own terminal rather than a Claude session: `pnpm exec wrangler rollback --env production`, then pick the version.
+- **Command line**, from your own terminal rather than a Claude session. `cf` has no `rollback` command: you deploy the last good version at 100%.
+  ```bash
+  pnpm exec cf workers deployments list --worker <name>   # what's live now
+  pnpm exec cf workers versions list --worker <name>      # find the last good version from main
+  pnpm exec cf workers deployments create --worker <name> --strategy percentage \
+    --versions '[{"version_id":"<last-good-version-id>","percentage":100}]'
+  ```
+  Add `--force` if a secret changed since that version. Each version keeps the `DEPLOYED_FROM` it was deployed with, so an older build of `main` still passes the deploy guard.
 
 Then open the app and check that the problem is gone.
 

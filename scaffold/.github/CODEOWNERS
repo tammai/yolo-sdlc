@@ -4,6 +4,8 @@
 /.claude/                    @TODO-org/engineers
 /scripts/                    @TODO-org/engineers
 /wrangler.jsonc              @TODO-org/engineers
+/wrangler.config.ts          @TODO-org/engineers
+/cloudflare.config.ts        @TODO-org/engineers
 /app.registry.json           @TODO-org/engineers
 /drizzle.config.ts           @TODO-org/engineers
 /CLAUDE.md                   @TODO-org/engineers

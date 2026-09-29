@@ -14,12 +14,13 @@ This is an **engineer** step. It creates the repo that non-engineers then work i
    - **Data:** *internal* / *personal* (anything about people, e.g. HR: every yellow change is treated as red) / *public*
    - **Name:** offer 2–3 short kebab-case names from what they said (e.g. `leave-tracker`). "Other" lets them type one.
    - **Folder:** default `<current folder>/<name>`. On Windows keep it short, e.g. `C:\Users\<name>\apps\<name>`. Deep paths break `pnpm install`.
+   - **Reviewers:** does a person need to be able to approve yellow and red changes, or is the Claude engineer review enough? *No reviewers* (Claude's review alone clears them; the person is told each time a change turns yellow or red) / *Just me* (the signed-in GitHub account) / *Me and others* (they type the GitHub handles in "Other"). Reviewers are optional, and one is fine.
 
 2. **Create it:**
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/new-app.mjs" <folder> --name <name> --type <type> --data <data> --description "<one sentence: what it's for>"
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/new-app.mjs" <folder> --name <name> --type <type> --data <data> --reviewers <reviewers> --description "<one sentence: what it's for>"
    ```
-   It copies the scaffold, fills in the name, type and a review date, installs the UI shell (dashboard / landing / starter), and makes the first commit. The owner and yellow reviewer default to the GitHub account `gh` is signed in as. Pass `--owner <handle>` if the owner is someone else.
+   `<reviewers>` is `none`, or GitHub handles separated by commas (`tammai,teammate`). *Just me* is the signed-in handle. It copies the scaffold, fills in the name, type, reviewers and a review date, installs the UI shell (dashboard / landing / starter), and makes the first commit. The owner defaults to the GitHub account `gh` is signed in as. Pass `--owner <handle>` if the owner is someone else.
 
 3. **Install and prove it works**, inside the new folder:
    ```bash
@@ -37,6 +38,6 @@ This is an **engineer** step. It creates the repo that non-engineers then work i
    - the ruleset on `main` (SETUP §5), through `gh api repos/<org>/<name>/rulesets`
    - the test pull request SETUP §5 asks for: a green change that should get the `risk:green` label and pass both checks
 
-   Name what's still `TODO` in `app.registry.json` (a second engineer under `reviewers.red`, and the Cloudflare URLs once the Workers exist).
+   Name what's still `TODO` in `app.registry.json` (the Cloudflare URLs once the Workers exist), and say who can clear yellow and red changes: the Claude engineer review, plus the reviewers they chose if any.
 
 5. **Next:** once it's set up, the owner opens the folder in Claude. The `yolo-sdlc` plugin is enabled by the repo's settings, and they start with `/yolo-sdlc:idea`.

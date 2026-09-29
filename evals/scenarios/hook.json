@@ -681,6 +681,226 @@
     }
   },
   {
+    "id": "cf-help-stderr-allowed",
+    "source": "help with stderr merged",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 create --help 2>&1"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-help-piped-allowed",
+    "source": "help with stderr merged, piped to head",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 create --help 2>&1 | head -30"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-version-stderr-allowed",
+    "source": "--version with stderr merged",
+    "tool": "Bash",
+    "input": {
+      "command": "cf --version 2>&1"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-search-devnull-allowed",
+    "source": "search with stderr discarded",
+    "tool": "Bash",
+    "input": {
+      "command": "cf cli search \"create kv namespace\" 2>/dev/null"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-help-to-file-blocked",
+    "source": "a redirect into a file is not harmless",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --help > notes.txt"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-help-quoted-redirect-blocked",
+    "source": "a quoted \"2>&1\" is an argument, not a redirect",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --help \"2>&1\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-deploy-stderr-blocked",
+    "source": "a redirect never makes an online call local",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy 2>&1"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-help-then-deploy-blocked",
+    "source": "a redirect then another cf call",
+    "tool": "Bash",
+    "input": {
+      "command": "cf --help 2>&1; cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-quote-touching-redirect",
+    "source": "a redirect glued to a quoted --help",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --message \"--help\"2>&1"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-single-quote-touching-redirect",
+    "source": "the same with single quotes and /dev/null",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --message '--help'2>/dev/null"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-quoted-help-glued",
+    "source": "a quoted --help glued to a redirect, no message",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy \"--help\"2>&1"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-short-help-glued",
+    "source": "a quoted -h glued to a redirect",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy \"-h\"1>&2"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-quoted-help-spaced-allowed",
+    "source": "a quoted --help, then a separate redirect",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 create \"--help\" 2>&1"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "deploy-guard-preview-blocked",
+    "source": "the preview deploy, started directly",
+    "tool": "Bash",
+    "input": {
+      "command": "node scripts/deploy-guard.mjs preview"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "deploy-guard-spoof-blocked",
+    "source": "posing as a Workers Builds build of main",
+    "tool": "Bash",
+    "input": {
+      "command": "WORKERS_CI=1 WORKERS_CI_BRANCH=main node scripts/deploy-guard.mjs"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "workers-ci-export-blocked",
+    "source": "exporting a Workers Builds setting",
+    "tool": "Bash",
+    "input": {
+      "command": "export WORKERS_CI_BRANCH=main"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "deploy-guard-tests-allowed",
+    "source": "running the deploy guard tests is fine",
+    "tool": "Bash",
+    "input": {
+      "command": "node --test scripts/test/deploy-guard.test.mjs"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "deploy-guard-read-allowed",
+    "source": "reading or diffing the deploy guard is fine",
+    "tool": "Bash",
+    "input": {
+      "command": "git diff main -- scripts/deploy-guard.mjs && grep -n mode scripts/cloudflare.mjs"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "deploy-guard-node-e-blocked",
+    "source": "importing the helper to run it",
+    "tool": "Bash",
+    "input": {
+      "command": "node -e \"import('./scripts/cloudflare.mjs').then(m => m.runCf(['deploy']))\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "deploy-guard-bun-blocked",
+    "source": "another runtime",
+    "tool": "Bash",
+    "input": {
+      "command": "bun scripts/deploy-guard.mjs preview"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
     "id": "cf-bash-c",
     "source": "wrapped: bash -c",
     "tool": "Bash",

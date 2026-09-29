@@ -36,7 +36,7 @@ Green changes ship after the checks pass. Yellow and red changes get an engineer
 - No new libraries in `package.json` unless the idea needs one. It triggers an engineer review.
 - No calls to outside services or third-party scripts (analytics, pixels, APIs) unless the idea needs them. They trigger an engineer review.
 - Store personal data (contact details, pay, health, ID numbers) only when the idea needs it, and show it only to signed-in staff. It triggers an engineer review.
-- Engineer-owned, don't edit: `.github/`, `.claude/`, `scripts/`, `wrangler.jsonc`, `app.registry.json`, `drizzle.config.ts`, `server/utils/access.ts`, `server/utils/turnstile.ts`, `server/middleware/`, `colada.options.ts`, `REVIEW.md`, `POLICIES.md`, `LEARNED.md`, `docs/`, `.yolo-sdlc.json`, this file.
+- Engineer-owned, don't edit: `.github/`, `.claude/`, `scripts/`, `wrangler.jsonc`, `cloudflare.config.ts`, `wrangler.config.ts`, `app.registry.json`, `drizzle.config.ts`, `server/utils/access.ts`, `server/utils/turnstile.ts`, `server/middleware/`, `colada.options.ts`, `REVIEW.md`, `POLICIES.md`, `LEARNED.md`, `docs/`, `.yolo-sdlc.json`, this file.
 - Don't edit an existing test to make it pass. If an example was wrong, change the intent with the person first.
 - Build and deploy scripts in `package.json` are engineer-owned. Production only runs code merged to `main`.
 

@@ -45,7 +45,20 @@ export function githubLogin() {
   }
 }
 
-export function createApp(dir, { name, type, data, owner, description, git = true }) {
+const HANDLE = /^[A-Za-z0-9-]{1,39}$/
+
+// --reviewers: "none", or GitHub handles separated by commas. Left out: the owner alone.
+export function parseReviewers(value) {
+  if (value === undefined) return undefined
+  if (typeof value !== 'string' || !value.trim()) throw new Error('--reviewers needs "none" or GitHub handles, e.g. --reviewers none')
+  if (value.trim().toLowerCase() === 'none') return []
+  const handles = [...new Set(value.split(',').map((s) => s.trim().replace(/^@/, '')).filter(Boolean))]
+  if (handles.some((h) => h.toLowerCase() === 'none')) throw new Error('--reviewers is either "none" or a list of handles, not both')
+  for (const h of handles) if (!HANDLE.test(h)) throw new Error(`reviewer "${h}" isn't a GitHub handle`)
+  return handles
+}
+
+export function createApp(dir, { name, type, data, owner, description, reviewers, git = true }) {
   if (!/^[a-z][a-z0-9-]{1,40}$/.test(name ?? '')) throw new Error('name must be lowercase letters, digits and dashes, e.g. leave-tracker')
   if (!TYPES.includes(type)) throw new Error(`type must be one of: ${TYPES.join(', ')}`)
   if (!DATA.includes(data)) throw new Error(`data must be one of: ${DATA.join(', ')}`)
@@ -63,11 +76,14 @@ export function createApp(dir, { name, type, data, owner, description, git = tru
   const reg = JSON.parse(readFileSync(regPath, 'utf8'))
   Object.assign(reg, { name, type, data, reviewBy: sixMonthsOn() })
   if (description) reg.description = description
-  // The owner reviews yellow; red needs a second engineer, which only a person can name.
   if (owner) {
-    if (!/^[A-Za-z0-9-]{1,39}$/.test(owner)) throw new Error('owner must be a GitHub handle')
-    Object.assign(reg, { owner, reviewers: { yellow: [owner], red: [owner, 'TODO-second-engineer-handle'] } })
+    if (!HANDLE.test(owner)) throw new Error('owner must be a GitHub handle')
+    reg.owner = owner
   }
+  // Reviewers are optional: none, one or several, the same people for yellow and red. With
+  // none, the Claude engineer review alone clears yellow and red. Left out: the owner alone.
+  const people = reviewers ?? (owner ? [owner] : [])
+  reg.reviewers = { yellow: [...people], red: [...people] }
   reg.urls = { production: `https://${name}.TODO-subdomain.workers.dev`, preview: `https://${name}-preview.TODO-subdomain.workers.dev` }
   writeFileSync(regPath, JSON.stringify(reg, null, 2) + '\n')
   replaceIn(join(target, 'app/app.config.ts'), [["name: 'New app'", `name: '${titleCase(name)}'`]])
@@ -92,18 +108,25 @@ export function createApp(dir, { name, type, data, owner, description, git = tru
 
 function parseArgs(argv) {
   const out = { dir: argv[0] }
-  for (let i = 1; i < argv.length; i += 2) out[argv[i].replace(/^--/, '')] = argv[i + 1]
+  for (let i = 1; i < argv.length; i += 2) out[argv[i].replace(/^--/, '')] = argv[i + 1] ?? null
   return out
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const { dir, name, type, data, owner, description } = parseArgs(process.argv.slice(2))
+  const { dir, name, type, data, owner, description, reviewers: reviewersArg } = parseArgs(process.argv.slice(2))
   try {
-    if (!dir) throw new Error('Usage: new-app.mjs <dir> --name <name> --type <internal|public|prototype> --data <public|internal|personal> [--owner <github-handle>] [--description "<one sentence>"]')
+    if (!dir) throw new Error('Usage: new-app.mjs <dir> --name <name> --type <internal|public|prototype> --data <public|internal|personal> [--owner <github-handle>] [--reviewers none|<handle>,<handle>] [--description "<one sentence>"]')
+    const reviewers = parseReviewers(reviewersArg)
     const who = owner ?? githubLogin()
-    const { target, template } = createApp(dir, { name, type, data, owner: who ?? undefined, description })
+    const { target, template } = createApp(dir, { name, type, data, owner: who ?? undefined, description, reviewers })
+    const listed = JSON.parse(readFileSync(join(target, 'app.registry.json'), 'utf8')).reviewers.red
     console.log(`Created ${name} (${type}, ${template} UI) at ${target}`)
-    console.log(who ? `Owner and yellow reviewer: ${who}. Name a second engineer under reviewers.red in app.registry.json.` : 'No owner set (gh is not signed in): fill in owner and reviewers in app.registry.json.')
+    console.log(who ? `Owner: ${who}.` : 'No owner set (gh is not signed in): fill in owner in app.registry.json.')
+    console.log(
+      listed.length
+        ? `Reviewers for yellow and red: ${listed.join(', ')} (or the Claude engineer review).`
+        : 'No reviewers: the Claude engineer review alone clears yellow and red changes, and the session tells the person each time.',
+    )
     console.log('Next: cd into it, run `pnpm install`, then follow docs/SETUP.md (Cloudflare, GitHub, branch rules).')
   } catch (err) {
     console.error(`✋ ${err.message}`)

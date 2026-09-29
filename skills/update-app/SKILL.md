@@ -21,7 +21,8 @@ The plugin's skills and reviewer update by themselves. But the parts GitHub and 
    It creates the branch `yolo-sdlc-update-<version>`, writes the managed files, and commits. It prints:
    - **Updated:** what changed. Read the diff (`git show --stat`, then `git show`) and summarise it in plain words.
    - **Kept:** extra files in plugin-owned folders that an engineer added. They're left alone.
-   - **Dependencies differ:** versions the plugin expects but the app has differently. They're *not* changed. Decide with the engineer whether to align them (`pnpm add <dep>@<version>`), then commit.
+   - **Dependencies differ:** versions the plugin expects but the app has differently. They're *not* changed. Decide with the engineer whether to align them (`pnpm add <dep>@<version>`), then commit. The one exception: a package the plugin's own scripts can't run without (`requiredDevDependencies` in `managed.json`, today Cloudflare's `cf`) is added when the app has none, and shows under **Updated**.
+   - **From 0.4.6, deploys run through Cloudflare's `cf` CLI.** Tell the engineer plainly: `cf` 1.0.0-beta.5 can't yet deploy a Nuxt build (cloudflare/cf#17, #18), so once this merges, Workers Builds deploys fail at the dry-run step, before any live migration, until Cloudflare fixes it. Suggest trying it on a branch with the preview Worker first (docs/SETUP.md §4).
 
 3. **Prove it:** `pnpm install && pnpm check`. If a check fails, the app's code may depend on something the update changed. Fix it on this branch and explain what and why.
 

@@ -1,19 +1,13 @@
 {
-  "$comment": "Engineer-owned (red tier). urls are shown to people by /yolo-sdlc:ship. CI reads this file from the base branch, so a pull request can't change its own reviewers. type: prototype | public | internal (must match APP_TYPE in wrangler.jsonc). data: public | internal | personal — 'personal' raises every yellow change to red. claudeReview: true lets the Claude engineer review (REVIEW.md) clear yellow and red changes; false means only people can (reviewers.yellow or reviewers.red for yellow, reviewers.red for red).",
+  "$comment": "Engineer-owned (red tier). urls are shown to people by /yolo-sdlc:ship. CI reads this file from the base branch, so a pull request can't change its own reviewers. type: prototype | public | internal (must match APP_TYPE in wrangler.jsonc). data: public | internal | personal — 'personal' raises every yellow change to red. claudeReview: true lets the Claude engineer review (REVIEW.md) clear yellow and red changes; false means only people can (reviewers.yellow or reviewers.red for yellow, reviewers.red for red). reviewers are optional: none, one or several; with none, the Claude engineer review alone clears yellow and red, and the session tells the person so.",
   "name": "TODO-app-name",
   "description": "TODO one sentence: what this app is for",
   "type": "internal",
   "data": "internal",
   "owner": "TODO-github-handle",
   "reviewers": {
-    "yellow": [
-      "TODO-owner-handle",
-      "TODO-teammate-handle"
-    ],
-    "red": [
-      "TODO-engineer-handle",
-      "TODO-second-engineer-handle"
-    ]
+    "yellow": [],
+    "red": []
   },
   "reviewBy": "TODO-YYYY-MM-DD",
   "urls": {

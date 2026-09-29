@@ -66,6 +66,38 @@ export function formatReport({ tier, findings, escalated }, decision, review) {
   return lines.join('\n')
 }
 
+const RANK = { green: 0, yellow: 1, red: 2 }
+export const rose = (previous, tier) => (RANK[tier] ?? 0) > (RANK[previous] ?? 0)
+
+// Who can clear a yellow or red change, in words. Reviewers are optional: with none listed,
+// the Claude engineer review alone clears it, and the person should know that.
+export function whoReviews(tier, registry) {
+  const list = (k) => registry?.reviewers?.[k] ?? []
+  const people = [...new Set(tier === 'red' ? list('red') : [...list('yellow'), ...list('red')])]
+    .filter((h) => h && !/^TODO-/.test(h))
+    .map((h) => '@' + h)
+  const claude = registry?.claudeReview !== false
+  if (claude && !people.length) {
+    return 'Only the Claude engineer review checks it before it goes live. No person is listed as a reviewer for this app, so make sure you are comfortable with that.'
+  }
+  // GitHub never lets anyone approve their own pull request, so a listed reviewer who made the
+  // change can't clear it: say so, rather than suggest they can.
+  const own = people.length === 1 && registry?.owner && people[0] === '@' + registry.owner
+    ? ` If you are ${people[0]}, you can't approve your own change, so only the Claude review checks it.`
+    : ' Nobody can approve their own change.'
+  if (claude) return `The Claude engineer review checks it before it goes live, or ${people.join(' or ')} can approve it.${own}`
+  if (people.length) return `${people.join(' or ')} must approve it before it goes live.${own.replace(', so only the Claude review checks it', '')}`
+  return 'Nobody listed can approve it, so it can’t go live until an engineer adds a reviewer to app.registry.json.'
+}
+
+// Shown to the person directly (not only to Claude) when a change becomes yellow or red,
+// so they know before they carry on.
+export function formatNotice({ tier, findings }, registry) {
+  const m = TIER_MEANING[tier]
+  const why = [...new Set(findings.filter((f) => f.tier === tier).map((f) => f.why))].slice(0, 2)
+  return [`${m.icon} Heads up: this change is now ${tier.toUpperCase()} (${m.title.toLowerCase()}).`, ...why, whoReviews(tier, registry)].join(' ')
+}
+
 // One line for the Claude session, which then explains it to the user in its own words.
 export function formatForSession({ tier, findings }, previous) {
   const m = TIER_MEANING[tier]

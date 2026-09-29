@@ -17,7 +17,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative } from 'node:path'
 import { classify, normalizePath } from './classify.mjs'
 import { collectChanges, currentBranch, gitDir, isGitRepo, resolveBase } from './git.mjs'
-import { formatForSession } from './report.mjs'
+import { formatForSession, formatNotice, rose } from './report.mjs'
 import { validateReview } from './review-record.mjs'
 
 const here = new URL('.', import.meta.url)
@@ -37,7 +37,7 @@ const deny = (reason) =>
 // ---------- Bash ----------
 
 const PROTECTED_IN_SHELL =
-  /(?:>>?|\btee\b|\bsed\s+-i|\bmv\b|\bcp\b|\brm\b|\bgit\s+(?:checkout|restore)\b)[^\n|;&]*(?:\.github[\\/]|\.claude[\\/]|scripts[\\/]|layers[\\/]|ui-templates[\\/]|wrangler\.(?:jsonc|toml)|app\.registry\.json|CLAUDE\.md|REVIEW\.md|POLICIES\.md|LEARNED\.md|docs[\\/]|\.yolo-sdlc\.json|content\.config\.ts|colada\.options\.ts)/
+  /(?:>>?|\btee\b|\bsed\s+-i|\bmv\b|\bcp\b|\brm\b|\bgit\s+(?:checkout|restore)\b)[^\n|;&]*(?:\.github[\\/]|\.claude[\\/]|scripts[\\/]|layers[\\/]|ui-templates[\\/]|wrangler\.(?:jsonc|toml|config\.ts)|cloudflare\.config\.ts|app\.registry\.json|CLAUDE\.md|REVIEW\.md|POLICIES\.md|LEARNED\.md|docs[\\/]|\.yolo-sdlc\.json|content\.config\.ts|colada\.options\.ts)/
 
 // `git push`, also with options before it: git -C . push, git -c k=v push, git --no-pager push.
 const PUSH = String.raw`\bgit(?:\s+-[Cc]\s+\S+|\s+-\S+)*\s+push\b`
@@ -51,6 +51,12 @@ const BASH_RULES = [
   {
     re: /\b(?:pnpm|npm|yarn)\s+(?:run\s+)?deploy/,
     why: 'Going live happens only through the reviewed pipeline, never from a session.',
+  },
+  {
+    // Running the deploy scripts, by any runtime or runner (reading or searching them is fine),
+    // and Workers Builds' own settings, which would make a session look like a build of main.
+    re: /\b(?:node|bun|deno|tsx|npx|pnpm|yarn|npm)\b[^\n]*\bscripts[\\/](?:deploy-guard|cloudflare)\.mjs\b|\bWORKERS_CI\w*\s*=/,
+    why: 'Going live happens only through the reviewed pipeline (Cloudflare Workers Builds), never from a session.',
   },
   {
     re: /\bwrangler\b[^\n]*\b(?:d1|kv|r2)\b[^\n]*--remote\b/,
@@ -92,11 +98,21 @@ function cfLocal(args) {
   if (args[0] === 'cli' && args[1] === 'search') return true // offline command search
   return args.length === 4 && args[0] === 'd1' && args[1] === 'migrations' && args[2] === 'create' // a local file
 }
+// Trailing output redirects that write nothing: `2>&1`, `>&2`, `>/dev/null`, `2>/dev/null`,
+// `&>/dev/null`, each a whole word of its own. Redirects into a file aren't on the list, so
+// `cf --help > notes.txt` is still blocked.
+const HARMLESS_REDIRECT = /^(?:\d?>&\d|(?:\d|&)?>>?\/dev\/null)$/
+// Shell words the way bash joins them: text touching a quote is the same word, so
+// `"--help"2>&1` is one word (bash passes `--help2`), never `--help` plus a redirect.
+const SHELL_WORD = /(?:"[^"]*"|'[^']*'|[^\s"'])+/g
+const unquote = (w) => w.replace(/"([^"]*)"|'([^']*)'/g, '$1$2')
 function cfCallsOnline(command) {
   for (const m of command.matchAll(CF_WORD)) {
-    // The rest of that one command, as rough shell words (quotes stripped).
+    // The rest of that one command, as shell words (quotes removed after splitting).
     const tail = command.slice(m.index + m[0].length).split(/&&|\|\||[;|\n)`]/)[0]
-    const args = (tail.match(/"[^"]*"|'[^']*'|\S+/g) ?? []).map((w) => w.replace(/^["']|["']$/g, ''))
+    const words = tail.match(SHELL_WORD) ?? []
+    while (words.length && HARMLESS_REDIRECT.test(words.at(-1))) words.pop()
+    const args = words.map(unquote)
     if (!cfLocal(args)) return true
   }
   return false
@@ -211,9 +227,9 @@ function checkEdit(tool, input, projectDir) {
 
 // ---------- Post: tier notice ----------
 
-function registryData(projectDir) {
+function readRegistry(projectDir) {
   try {
-    return JSON.parse(readFileSync(join(projectDir, 'app.registry.json'), 'utf8')).data
+    return JSON.parse(readFileSync(join(projectDir, 'app.registry.json'), 'utf8'))
   } catch {
     return undefined
   }
@@ -222,12 +238,15 @@ function registryData(projectDir) {
 function notifyTier(projectDir) {
   if (!isGitRepo(projectDir)) return
   const base = resolveBase(projectDir)
-  const result = classify(collectChanges({ cwd: projectDir, base }), config, { data: registryData(projectDir) })
+  const registry = readRegistry(projectDir)
+  const result = classify(collectChanges({ cwd: projectDir, base }), config, { data: registry?.data })
   const stateFile = join(gitDir(projectDir), 'risk-tier-last')
   const previous = existsSync(stateFile) ? readFileSync(stateFile, 'utf8').trim() : 'green'
   if (previous === result.tier) return
   writeFileSync(stateFile, result.tier)
-  emit({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: formatForSession(result, previous) } })
+  // Rising to yellow or red is also shown to the person directly, so they know right away.
+  const notice = rose(previous, result.tier) ? { systemMessage: formatNotice(result, registry) } : {}
+  emit({ ...notice, hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: formatForSession(result, previous) } })
 }
 
 // ---------- Main ----------
