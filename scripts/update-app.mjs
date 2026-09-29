@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { PLUGIN_ROOT, pluginVersion } from './new-app.mjs'
+import { PLUGIN_ROOT, pluginVersion, TEMPLATES } from './new-app.mjs'
 
 const SCAFFOLD = join(PLUGIN_ROOT, 'scaffold')
 const managed = () => JSON.parse(readFileSync(join(PLUGIN_ROOT, 'scripts', 'managed.json'), 'utf8'))
@@ -119,11 +119,11 @@ export function updateApp(appDir, { git = true } = {}) {
     }
   }
 
-  // The UI layer: reinstall the app's current template from the (just refreshed) ui-templates/.
+  // The UI layer: reinstall the app's current template from the plugin's own ui-templates/.
   const layerInfo = join(app, 'layers', 'ui', '.template.json')
   const template = existsSync(layerInfo) ? readJson(layerInfo).name : undefined
   const before = snapshot(join(app, 'layers', 'ui'))
-  execFileSync(process.execPath, [join(app, 'scripts', 'ui-template.mjs'), ...(template ? [template] : [])], { cwd: app, stdio: 'ignore' })
+  execFileSync(process.execPath, [join(app, 'scripts', 'ui-template.mjs'), ...(template ? [template] : []), '--from', TEMPLATES], { cwd: app, stdio: 'ignore' })
   if (snapshot(join(app, 'layers', 'ui')) !== before) changed.push('layers/ui/')
 
   const stamp = JSON.stringify({ plugin: 'yolo-sdlc', version }, null, 2) + '\n'

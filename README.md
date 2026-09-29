@@ -88,12 +88,14 @@ The app stack is Nuxt 4 on Cloudflare Workers, with Nuxt UI, Pinia and Pinia Col
 - **Reviewers are optional.** `/yolo-sdlc:new-app` asks whether the app needs people who can approve yellow and red changes. With none, the Claude engineer review alone clears them, and the session tells the person each time a change turns yellow or red.
 - **Session settings live in the app's repo.** To hold them on every non-engineer's machine regardless, deploy the managed settings in `docs/managed-settings.example.json` (see `docs/SETUP.md`, section 7).
 - **Dates default to Vietnamese** (`locale: 'vi-VN'`, `timeZone: 'Asia/Ho_Chi_Minh'`). Change them per app in `app/app.config.ts`.
+- **CI stays fast.** GitHub runs typecheck and the risk-tier tests. The browser checks of the agreed examples run on the author's machine: `/yolo-sdlc:build` proves them, `/yolo-sdlc:check` shows each one with its screenshot, and `/yolo-sdlc:ship` requires `pnpm check` to pass before anything is pushed.
+- **Apps carry only the UI shell they use.** The three template sources stay in the plugin (`scaffold/ui-templates/`); an app has its installed shell in `layers/ui/` and a fingerprint that fails the checks if anyone edits it by hand.
 - **Fonts and icons are bundled, never fetched.** New apps use Google Sans (Latin, Latin Extended and Vietnamese subsets) from `public/fonts/`, with Nuxt UI's font downloader off. Lucide icons come from the installed `@iconify-json/lucide` set, and the client bundle includes the ones Nuxt UI's own components use. A page makes no request to Google Fonts, Bunny or Iconify.
 - **The stack is fixed on purpose.** Requests outside it (other frameworks, databases, payments, mobile apps) go to an engineer.
 
 ## Status
 
-Version 0.4.7. Until 0.3.0 the plugin was called `ai-sdlc`. Apps made with it move over the next time `/yolo-sdlc:update-app` runs: their plugin settings and version stamp are renamed, and nothing else changes.
+Version 0.4.8. Until 0.3.0 the plugin was called `ai-sdlc`. Apps made with it move over the next time `/yolo-sdlc:update-app` runs: their plugin settings and version stamp are renamed, and nothing else changes.
 
 **Verified live on a test app (2026-09-24), before the workflow was packaged as a plugin:**
 - **The merge gate on real pull requests.** Red is blocked until reviewed, and green passes. A review counts only for the commit it read. The gate reads `main` as it is at check time. Branch rules are enforced.

@@ -33,6 +33,8 @@ test('new-app: an internal app gets the dashboard shell, its name, type and a fi
   assert.equal(readJson(join(dir, '.yolo-sdlc.json')).version, pluginVersion())
   assert.ok(!existsSync(join(dir, 'node_modules')), 'no build output copied')
   assert.ok(!existsSync(join(dir, '.claude/skills')), 'skills come from the plugin, not the app')
+  assert.ok(!existsSync(join(dir, 'ui-templates')), 'the UI template sources stay in the plugin')
+  assert.ok(readJson(join(dir, 'layers/ui/.template.json')).hash, 'the installed shell records its fingerprint')
   assert.equal(readJson(join(dir, '.claude/settings.json')).enabledPlugins['yolo-sdlc@yolo-sdlc'], true)
   assert.match(git(dir, 'log', '--oneline'), /Start leave-tracker from yolo-sdlc/)
 })
@@ -86,6 +88,9 @@ test("update-app: restores plugin files and never touches the app's own work", (
   // Seeds: an app's own policies stay; a missing lessons file is created.
   writeFileSync(join(dir, 'POLICIES.md'), '# Our policies\nChecked at `/ai-sdlc:shape`. Our ai-sdlc rollout is in Q3.\n')
   rmSync(join(dir, 'LEARNED.md'))
+  // An app from before 0.4.8 kept its own copy of the UI template sources.
+  mkdirSync(join(dir, 'ui-templates/dashboard'), { recursive: true })
+  writeFileSync(join(dir, 'ui-templates/dashboard/manifest.json'), '{}\n')
   // An app from before the rename: its version stamp is .ai-sdlc.json.
   rmSync(join(dir, '.yolo-sdlc.json'))
   writeFileSync(join(dir, '.ai-sdlc.json'), JSON.stringify({ plugin: 'ai-sdlc', version: '0.3.0' }) + '\n')
@@ -129,6 +134,8 @@ test("update-app: restores plugin files and never touches the app's own work", (
   for (const f of appFiles) assert.equal(readFileSync(join(dir, f), 'utf8'), before[f], `${f} must not change`)
   assert.ok(existsSync(join(dir, 'scripts/seed.mjs')), 'extra engineer files are kept')
   assert.ok(!existsSync(join(dir, '.claude/skills/ship')), 'old in-repo copies of plugin skills are removed')
+  assert.ok(!existsSync(join(dir, 'ui-templates')) && r.changed.includes('removed ui-templates'), 'the app copy of the UI templates is removed')
+  assert.ok(readJson(join(dir, 'layers/ui/.template.json')).hash, 'the shell is reinstalled from the plugin, with its fingerprint')
   assert.ok(existsSync(join(dir, '.claude/skills/my-own/SKILL.md')), 'other skills are kept')
   assert.equal(git(dir, 'status', '--porcelain'), '', 'the update is committed on its branch')
 

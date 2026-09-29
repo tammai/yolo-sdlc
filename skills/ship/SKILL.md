@@ -45,7 +45,7 @@ Nothing reaches the live app from this computer. `/yolo-sdlc:ship` reviews the c
    - the agreed examples as a checklist, each ✅
    - "Risk tier: 🟢/🟡/🔴 — <reason>"
    - a link to the intent file on the branch
-   - "Screenshots: in the `example-checks` artifact of the `ci` run"
+   - "Examples: each one passed as a browser check, and was shown working with its screenshot at `/yolo-sdlc:check`" (CI runs typecheck and the risk-tier tests; the browser checks run on the author's machine)
 
 5. **Post the review** (🟡 and 🔴): `pnpm review:post .git/yolo-sdlc-review/<sha>.json`. It refuses a review of any commit other than the one the pull request is on, so if this fails, something was committed after the review: go back to step 3.
 

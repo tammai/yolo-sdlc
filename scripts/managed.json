@@ -1,5 +1,5 @@
 {
-  "$comment": "What the yolo-sdlc plugin owns inside an app. /yolo-sdlc:update-app overwrites exactly these from scaffold/ and never touches anything else: the app's pages, queries, API routes, schema, migrations, intents, content, example tests, wrangler.jsonc, app.registry.json and app.config.ts are the app's own. 'dirs' are refreshed file by file (extra files an engineer added are kept and reported). 'seed' files are written only when the app lacks them, then belong to the app (engineer-owned). 'packageScripts' are the package.json script keys the plugin owns. 'requiredDevDependencies' are packages the plugin's own scripts can't run without: added at the scaffold's version when the app has none, never changed when it has one. Every other dependency is only reported, never changed. 'remove' lists copies that apps made before the plugin existed; they now come from the plugin, so update-app deletes exactly these paths. It also lists the version stamp from before the plugin was renamed (ai-sdlc → yolo-sdlc), and the cf deploy configs 0.4.6 added (cloudflare.config.ts, wrangler.config.ts): from 0.4.7 deploys read wrangler.jsonc again, until cf can deploy a Nuxt build.",
+  "$comment": "What the yolo-sdlc plugin owns inside an app. /yolo-sdlc:update-app overwrites exactly these from scaffold/ and never touches anything else: the app's pages, queries, API routes, schema, migrations, intents, content, example tests, wrangler.jsonc, app.registry.json and app.config.ts are the app's own. 'dirs' are refreshed file by file (extra files an engineer added are kept and reported). 'seed' files are written only when the app lacks them, then belong to the app (engineer-owned). 'packageScripts' are the package.json script keys the plugin owns. 'requiredDevDependencies' are packages the plugin's own scripts can't run without: added at the scaffold's version when the app has none, never changed when it has one. Every other dependency is only reported, never changed. 'remove' lists copies that apps made before the plugin existed; they now come from the plugin, so update-app deletes exactly these paths. It also lists the version stamp from before the plugin was renamed (ai-sdlc → yolo-sdlc), the UI template sources (ui-templates/: from 0.4.8 they stay in the plugin, and apps keep only the installed shell in layers/ui/), and the cf deploy configs 0.4.6 added (cloudflare.config.ts, wrangler.config.ts): from 0.4.7 deploys read wrangler.jsonc again, until cf can deploy a Nuxt build.",
   "files": [
     ".claude/settings.json",
     ".github/workflows/ci.yml",
@@ -25,8 +25,7 @@
     "docs/managed-settings.example.json"
   ],
   "dirs": [
-    "scripts",
-    "ui-templates"
+    "scripts"
   ],
   "seed": [
     "POLICIES.md",
@@ -59,6 +58,7 @@
     ".claude/agents/engineer-reviewer.md",
     "cloudflare.config.ts",
     "wrangler.config.ts",
+    "ui-templates",
     ".ai-sdlc.json"
   ]
 }
