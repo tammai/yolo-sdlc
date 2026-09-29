@@ -1,0 +1,109 @@
+<svg class="lp" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 580" width="880" height="580" role="img" aria-label="How a change goes from a problem to the live app, in six steps that loop. 1, you tell Claude the problem in your own words. 2, you agree what done means by picking 2 to 5 examples. 3, Claude builds it and a second Claude checks the work. 4, you see a picture of each example working and say whether it is what you wanted; if not quite, you change the examples. 5, it goes live safely: riskier changes get a review first, and only checked work reaches the live app. 6, if something is wrong, anyone presses Report a problem, and it becomes the next idea, back at step 1.">
+  <style>
+    .lp { --lp-bg: #f6f8fb; --lp-card: #ffffff; --lp-line: #d3dae3; --lp-ink: #17202c; --lp-muted: #586273; --lp-you: #dcf0f2; --lp-you-line: #0b7a83; --lp-edge: #7a8494; }
+    @media (prefers-color-scheme: dark) {
+      .lp { --lp-bg: #111821; --lp-card: #18212c; --lp-line: #2d3a48; --lp-ink: #e8eef5; --lp-muted: #a3afbd; --lp-you: #0f3036; --lp-you-line: #4fc3cc; --lp-edge: #8d99a8; }
+    }
+    .lp-bg { fill: var(--lp-bg); }
+    .lp-card { fill: var(--lp-card); stroke: var(--lp-line); stroke-width: 1.5; }
+    .lp-you { fill: var(--lp-you); stroke: var(--lp-you-line); stroke-width: 2; }
+    .lp-num { fill: var(--lp-ink); }
+    .lp-num-you { fill: var(--lp-you-line); }
+    .lp-numtext { fill: var(--lp-bg); font: 700 16px 'Bricolage Grotesque', system-ui, sans-serif; }
+    .lp-pill { fill: none; stroke: var(--lp-line); stroke-width: 1.25; }
+    .lp-pill-you { fill: none; stroke: var(--lp-you-line); stroke-width: 1.25; }
+    .lp-pilltext { fill: var(--lp-muted); font: 600 11.5px 'Atkinson Hyperlegible', system-ui, sans-serif; letter-spacing: 0.02em; }
+    .lp-title { fill: var(--lp-ink); font: 700 16px 'Bricolage Grotesque', system-ui, sans-serif; }
+    .lp-line { fill: var(--lp-muted); font: 13.5px 'Atkinson Hyperlegible', system-ui, sans-serif; }
+    .lp-heading { fill: var(--lp-ink); font: 700 20px 'Bricolage Grotesque', system-ui, sans-serif; }
+    .lp-label { fill: var(--lp-muted); font: 600 12.5px 'Atkinson Hyperlegible', system-ui, sans-serif; }
+    .lp-edge { fill: none; stroke: var(--lp-edge); stroke-width: 2; }
+    .lp-back { fill: none; stroke: var(--lp-edge); stroke-width: 2; stroke-dasharray: 6 5; }
+    .lp-arrowhead { fill: var(--lp-edge); }
+  </style>
+  <defs>
+    <marker id="lp-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="lp-arrowhead" d="M0,0 L10,5 L0,10 z" />
+    </marker>
+  </defs>
+  <path class="lp-bg" d="M0,0 H880 V580 H0 Z" />
+  <text class="lp-heading" x="20" y="44">From a problem to the live app, in six steps</text>
+
+  <!-- The loop -->
+  <path class="lp-edge" d="M260 159 H320" marker-end="url(#lp-arrow)" />
+  <path class="lp-edge" d="M560 159 H620" marker-end="url(#lp-arrow)" />
+  <path class="lp-edge" d="M740 234 V344" marker-end="url(#lp-arrow)" />
+  <path class="lp-edge" d="M620 419 H560" marker-end="url(#lp-arrow)" />
+  <path class="lp-edge" d="M320 419 H260" marker-end="url(#lp-arrow)" />
+  <path class="lp-back" d="M140 344 V234" marker-end="url(#lp-arrow)" />
+  <text class="lp-label" x="152" y="294">it becomes the next idea</text>
+
+  <!-- Not quite: back to the examples -->
+// Box 4's top face also takes the arrow from box 3 (at its centre), so this one leaves off-centre.
+  <path class="lp-back" d="M660 344 V301 H440 V234" marker-end="url(#lp-arrow)" />
+  <text class="lp-label" x="550" y="292" text-anchor="middle">not quite? change the examples</text>
+
+  <g>
+    <rect class="lp-you" x="20" y="84" width="240" height="150" rx="14" />
+    <circle class="lp-num-you" cx="50" cy="116" r="16" />
+    <text class="lp-numtext" x="50" y="121" text-anchor="middle">1</text>
+    <path class="lp-pill-you" d="M171,105 H235 A11,11 0 0 1 235,127 H171 A11,11 0 0 1 171,105 Z" />
+    <text class="lp-pilltext" x="203" y="120" text-anchor="middle">you decide</text>
+    <text class="lp-title" x="36" y="160">Tell Claude the problem</text>
+    <text class="lp-line" x="36" y="186">In your own words.</text>
+    <text class="lp-line" x="36" y="205">It asks a few quick questions.</text>
+  </g>
+  <g>
+    <rect class="lp-you" x="320" y="84" width="240" height="150" rx="14" />
+    <circle class="lp-num-you" cx="350" cy="116" r="16" />
+    <text class="lp-numtext" x="350" y="121" text-anchor="middle">2</text>
+    <path class="lp-pill-you" d="M471,105 H535 A11,11 0 0 1 535,127 H471 A11,11 0 0 1 471,105 Z" />
+    <text class="lp-pilltext" x="503" y="120" text-anchor="middle">you decide</text>
+    <text class="lp-title" x="336" y="160">Agree what “done” means</text>
+    <text class="lp-line" x="336" y="186">Pick 2 to 5 examples, like</text>
+    <text class="lp-line" x="336" y="205">“When I add a room, I see it.”</text>
+  </g>
+  <g>
+    <rect class="lp-card" x="620" y="84" width="240" height="150" rx="14" />
+    <circle class="lp-num" cx="650" cy="116" r="16" />
+    <text class="lp-numtext" x="650" y="121" text-anchor="middle">3</text>
+    <path class="lp-pill" d="M797,105 H835 A11,11 0 0 1 835,127 H797 A11,11 0 0 1 797,105 Z" />
+    <text class="lp-pilltext" x="816" y="120" text-anchor="middle">Claude</text>
+    <text class="lp-title" x="636" y="160">Claude builds it</text>
+    <text class="lp-line" x="636" y="186">It plans and builds, then a</text>
+    <text class="lp-line" x="636" y="205">second Claude checks the work.</text>
+  </g>
+  <g>
+    <rect class="lp-you" x="620" y="344" width="240" height="150" rx="14" />
+    <circle class="lp-num-you" cx="650" cy="376" r="16" />
+    <text class="lp-numtext" x="650" y="381" text-anchor="middle">4</text>
+    <path class="lp-pill-you" d="M771,365 H835 A11,11 0 0 1 835,387 H771 A11,11 0 0 1 771,365 Z" />
+    <text class="lp-pilltext" x="803" y="380" text-anchor="middle">you decide</text>
+    <text class="lp-title" x="636" y="420">See it working</text>
+    <text class="lp-line" x="636" y="446">A picture of each example.</text>
+    <text class="lp-line" x="636" y="465">Is this what you wanted?</text>
+  </g>
+  <g>
+    <rect class="lp-card" x="320" y="344" width="240" height="150" rx="14" />
+    <circle class="lp-num" cx="350" cy="376" r="16" />
+    <text class="lp-numtext" x="350" y="381" text-anchor="middle">5</text>
+    <path class="lp-pill" d="M451,365 H535 A11,11 0 0 1 535,387 H451 A11,11 0 0 1 451,365 Z" />
+    <text class="lp-pilltext" x="493" y="380" text-anchor="middle">safety checks</text>
+    <text class="lp-title" x="336" y="420">It goes live, safely</text>
+    <text class="lp-line" x="336" y="446">Riskier changes get a review</text>
+    <text class="lp-line" x="336" y="465">first. Only checked work</text>
+    <text class="lp-line" x="336" y="484">reaches the live app.</text>
+  </g>
+  <g>
+    <rect class="lp-you" x="20" y="344" width="240" height="150" rx="14" />
+    <circle class="lp-num-you" cx="50" cy="376" r="16" />
+    <text class="lp-numtext" x="50" y="381" text-anchor="middle">6</text>
+    <path class="lp-pill-you" d="M217,365 H235 A11,11 0 0 1 235,387 H217 A11,11 0 0 1 217,365 Z" />
+    <text class="lp-pilltext" x="226" y="380" text-anchor="middle">you</text>
+    <text class="lp-title" x="36" y="420">Something wrong?</text>
+    <text class="lp-line" x="36" y="446">Press “Report a problem”</text>
+    <text class="lp-line" x="36" y="465">on any page.</text>
+  </g>
+
+  <text class="lp-label" x="20" y="558">Shaded steps are where you decide. Claude and the safety checks do the rest.</text>
+</svg>

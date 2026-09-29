@@ -95,9 +95,9 @@ function runTool(tool, args, { app = '.', env = process.env, capture = false } =
     encoding: 'utf8',
     stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit',
   })
-  if (res.error) throw new Error(`cf couldn't start: ${res.error.message}`)
+  if (res.error) throw new Error(`${tool} couldn't start: ${res.error.message}`)
   if (res.status !== 0) {
-    if (capture) throw new Error(`cf ${args.slice(0, 2).join(' ')} failed (exit ${res.status ?? res.signal})`)
+    if (capture) throw new Error(`${tool} ${args.slice(0, 2).join(' ')} failed (exit ${res.status ?? res.signal})`)
     process.exit(res.status ?? 1)
   }
   return res.stdout
