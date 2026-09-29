@@ -41,6 +41,15 @@ const cases = [
   bash('cf-word-in-text-allowed', '"cf" as an ordinary word, e.g. "cf. the plan"', 'git commit -m "Rooms page (cf. the plan)"', false),
   bash('cf-cli-other-blocked', 'cf cli: only `cli search` is local', 'cf cli config set token abc', true),
   bash('cf-dev-lookalike-blocked', '"dev-something" is not `cf dev`', 'cf dev-tunnels create', true),
+  // Trailing redirects that write nothing don't count as words (found testing 0.4.5 in an app).
+  bash('cf-help-stderr-allowed', 'help with stderr merged', 'cf d1 create --help 2>&1', false),
+  bash('cf-help-piped-allowed', 'help with stderr merged, piped to head', 'cf d1 create --help 2>&1 | head -30', false),
+  bash('cf-version-stderr-allowed', '--version with stderr merged', 'cf --version 2>&1', false),
+  bash('cf-search-devnull-allowed', 'search with stderr discarded', 'cf cli search "create kv namespace" 2>/dev/null', false),
+  bash('cf-help-to-file-blocked', 'a redirect into a file is not harmless', 'cf deploy --help > notes.txt', true),
+  bash('cf-help-quoted-redirect-blocked', 'a quoted "2>&1" is an argument, not a redirect', 'cf deploy --help "2>&1"', true),
+  bash('cf-deploy-stderr-blocked', 'a redirect never makes an online call local', 'cf deploy 2>&1', true),
+  bash('cf-help-then-deploy-blocked', 'a redirect then another cf call', 'cf --help 2>&1; cf deploy', true),
   // Wrapped forms, found by the engineer review of the 0.4.3 update.
   bash('cf-bash-c', 'wrapped: bash -c', 'bash -c "cf deploy"', true),
   bash('cf-subshell', 'wrapped: a subshell', '(cf deploy)', true),

@@ -681,6 +681,94 @@
     }
   },
   {
+    "id": "cf-help-stderr-allowed",
+    "source": "help with stderr merged",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 create --help 2>&1"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-help-piped-allowed",
+    "source": "help with stderr merged, piped to head",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 create --help 2>&1 | head -30"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-version-stderr-allowed",
+    "source": "--version with stderr merged",
+    "tool": "Bash",
+    "input": {
+      "command": "cf --version 2>&1"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-search-devnull-allowed",
+    "source": "search with stderr discarded",
+    "tool": "Bash",
+    "input": {
+      "command": "cf cli search \"create kv namespace\" 2>/dev/null"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-help-to-file-blocked",
+    "source": "a redirect into a file is not harmless",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --help > notes.txt"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-help-quoted-redirect-blocked",
+    "source": "a quoted \"2>&1\" is an argument, not a redirect",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --help \"2>&1\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-deploy-stderr-blocked",
+    "source": "a redirect never makes an online call local",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy 2>&1"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-help-then-deploy-blocked",
+    "source": "a redirect then another cf call",
+    "tool": "Bash",
+    "input": {
+      "command": "cf --help 2>&1; cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
     "id": "cf-bash-c",
     "source": "wrapped: bash -c",
     "tool": "Bash",

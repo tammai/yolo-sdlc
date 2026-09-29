@@ -92,11 +92,17 @@ function cfLocal(args) {
   if (args[0] === 'cli' && args[1] === 'search') return true // offline command search
   return args.length === 4 && args[0] === 'd1' && args[1] === 'migrations' && args[2] === 'create' // a local file
 }
+// Trailing output redirects that write nothing: `2>&1`, `>&2`, `>/dev/null`, `2>/dev/null`,
+// `&>/dev/null`. Unquoted only, so a quoted "2>&1" stays an argument. Redirects into a file
+// aren't on the list, so `cf --help > notes.txt` is still blocked.
+const HARMLESS_REDIRECT = /^(?:\d?>&\d|(?:\d|&)?>>?\/dev\/null)$/
 function cfCallsOnline(command) {
   for (const m of command.matchAll(CF_WORD)) {
     // The rest of that one command, as rough shell words (quotes stripped).
     const tail = command.slice(m.index + m[0].length).split(/&&|\|\||[;|\n)`]/)[0]
-    const args = (tail.match(/"[^"]*"|'[^']*'|\S+/g) ?? []).map((w) => w.replace(/^["']|["']$/g, ''))
+    const words = tail.match(/"[^"]*"|'[^']*'|\S+/g) ?? []
+    while (words.length && HARMLESS_REDIRECT.test(words.at(-1))) words.pop()
+    const args = words.map((w) => w.replace(/^["']|["']$/g, ''))
     if (!cfLocal(args)) return true
   }
   return false
