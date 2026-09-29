@@ -36,6 +36,9 @@ No booking, no calendar. Just the list.
 - A new table for rooms (name only)
 - Two server routes: list the rooms, and add a room (signed-in staff only)
 
+## Policy concerns
+None.
+
 ## Technical plan
 
 ### Files, in order

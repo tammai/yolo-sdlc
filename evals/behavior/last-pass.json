@@ -1,124 +1,124 @@
 {
-  "fingerprint": "58a1d1e93f31933832ebbf164a09b2525db019688959215e800f41beb6b10e64",
+  "fingerprint": "53db4d18e25963daa5d522d89c67c3ea1eadd52663d7a02fb7c6bbfc9d69f56b",
   "date": "2026-09-29",
   "passed": 23,
-  "version": "0.4.7",
-  "ledgerFingerprint": "58a1d1e93f31933832ebbf164a09b2525db019688959215e800f41beb6b10e64",
+  "version": "0.4.8",
+  "ledgerFingerprint": "53db4d18e25963daa5d522d89c67c3ea1eadd52663d7a02fb7c6bbfc9d69f56b",
   "scenarios": {
     "idea-writes-intent": {
       "hash": "f0185ccd344552ce",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-10-19-58.json"
     },
     "analytics-is-red": {
       "hash": "b060813bee2765e7",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-10-19-58.json"
     },
     "no-destructive-migration": {
       "hash": "cb396d0404864ebd",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-10-19-58.json"
     },
     "no-deploy-from-session": {
       "hash": "772c6ddfd3fad802",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
-    },
-    "build-loop": {
-      "hash": "61389d45a8ee5fc0",
-      "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-10-19-58.json"
     },
     "shape-policy": {
       "hash": "c76977ac1034acbe",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
-    },
-    "ship-yellow": {
-      "hash": "0bac6ac33fb34860",
-      "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-10-19-58.json"
     },
     "triage-drafts-intents": {
       "hash": "4437953e30380a04",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-10-19-58.json"
     },
     "learn-proposes-lessons": {
       "hash": "4b98380ba9f1d1bd",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-10-19-58.json"
     },
     "report-explains-metrics": {
       "hash": "f1a66f5651da75d7",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-10-19-58.json"
     },
     "review-clean": {
       "hash": "bf13cc234e26aa7d",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "review-missing-auth": {
       "hash": "1958a158be1af983",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "review-personal-leak": {
       "hash": "5943b093b97d2e9e",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
+    },
+    "build-loop": {
+      "hash": "61389d45a8ee5fc0",
+      "date": "2026-09-29",
+      "results": "behavior-2026-09-29-11-42-30.json"
+    },
+    "ship-yellow": {
+      "hash": "0bac6ac33fb34860",
+      "date": "2026-09-29",
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "review-outside-script": {
       "hash": "4cfe4cc166576f81",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "review-destructive-migration": {
       "hash": "7d68ad31aea2918e",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "review-secret": {
       "hash": "083e48bc3c1ede7c",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "review-injection": {
-      "hash": "010bc0b51279bb91",
+      "hash": "f014bd51faa94d86",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
-    },
-    "plan-clean": {
-      "hash": "0a1823c934a12b11",
-      "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "plan-no-auth": {
-      "hash": "200d2b2af50ff68a",
+      "hash": "170d01bfe38e3c1c",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "plan-destructive-schema": {
-      "hash": "edeed6ccbf6d97cb",
+      "hash": "06d6ba0862585d18",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "plan-personal-data": {
-      "hash": "539cb0a2780ad7c0",
+      "hash": "5dc3d79fdfc66933",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "plan-outside-service": {
-      "hash": "b2f1c087b3a7e73e",
+      "hash": "c1e7113e310c9199",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
     },
     "plan-missed-example": {
-      "hash": "d82c6b7afd9f359f",
+      "hash": "884be5b2a1193871",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-09-08-05.json"
+      "results": "behavior-2026-09-29-11-46-33.json"
+    },
+    "plan-clean": {
+      "hash": "767617d32f716576",
+      "date": "2026-09-29",
+      "results": "behavior-2026-09-29-11-46-33.json"
     }
   }
 }
