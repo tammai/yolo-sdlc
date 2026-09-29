@@ -7,7 +7,7 @@ The starting point for apps built by non-engineers (HR, marketing, PMs, designer
 | Layer | What |
 | --- | --- |
 | App | Nuxt 4 on Cloudflare Workers |
-| UI | [Nuxt UI](https://ui.nuxt.com), inside a template shell in `layers/ui/`: **dashboard** for internal apps, **landing** for public ones, **starter** for prototypes. Each is curated from [nuxt-ui-templates](https://github.com/nuxt-ui-templates) at a pinned commit (`ui-templates/`) and installed with `pnpm ui:template`. |
+| UI | [Nuxt UI](https://ui.nuxt.com), inside a template shell in `layers/ui/`: **dashboard** for internal apps, **landing** for public ones, **starter** for prototypes. Each is curated from [nuxt-ui-templates](https://github.com/nuxt-ui-templates) at a pinned commit, kept in the yolo-sdlc plugin, and installed by `/yolo-sdlc:new-app` (or switched by an engineer with `node scripts/ui-template.mjs <name> --from "<plugin>/scaffold/ui-templates"`). |
 | State | Pinia Colada for server data (one file per kind of data in `app/queries/`), Pinia for client-only state |
 | Data | D1 through Drizzle, KV for settings. Landing-page copy is in `content/landing.yml` (Nuxt Content). |
 | Sign-in | Cloudflare Access for staff, Turnstile for public forms |
@@ -60,5 +60,5 @@ A deterministic script (`scripts/risk-tier/`) decides every change's tier. It ru
 pnpm install && pnpm db:migrate:local && pnpm dev   # run locally
 pnpm check                                           # typecheck + script tests + browser checks
 pnpm risk                                            # this branch's tier, in plain words
-pnpm ui:template [dashboard|landing|starter]         # engineers: install or switch the UI shell
+pnpm ui:template <name> --from <plugin>/scaffold/ui-templates   # engineers: switch the UI shell
 ```

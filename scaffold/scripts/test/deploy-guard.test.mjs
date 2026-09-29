@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { checkPreviewDeploy, checkProductionDeploy, deployPlan } from '../deploy-guard.mjs'
@@ -86,4 +87,18 @@ test('the deploy step can actually start cf and wrangler (dry run, deploys nothi
   assert.equal(ok.status, 0, ok.stderr)
   assert.match(ok.stdout, /Deploying idea\/x @ abc123 to preview/)
   assert.match(ok.stdout, /\$ cf --version[\s\S]*\d+\.\d+\.\d+[\s\S]*\$ wrangler --version/) // both started
+
+  // And the production path, end to end: a Workers Builds build of main. Prototypes refuse it.
+  const prod = spawnSync(process.execPath, [script], {
+    encoding: 'utf8',
+    env: { ...process.env, WORKERS_CI: '1', WORKERS_CI_BRANCH: 'main', WORKERS_CI_COMMIT_SHA: 'abc123', DEPLOY_GUARD_DRY_RUN: '1' },
+  })
+  if (JSON.parse(readFileSync('app.registry.json', 'utf8')).type === 'prototype') {
+    assert.equal(prod.status, 1)
+    assert.match(prod.stderr, /prototype/)
+  } else {
+    assert.equal(prod.status, 0, prod.stderr)
+    assert.match(prod.stdout, /Deploying main @ abc123 to production/)
+    assert.match(prod.stdout, /\$ cf --version[\s\S]*\$ wrangler --version/)
+  }
 })

@@ -1,5 +1,6 @@
-# Quality checks: typecheck, the risk-tier suite, and every agreed example as a browser
-# check. Screenshots are uploaded so reviewers can see what was checked.
+# Quality checks: typecheck and the risk-tier suite. The agreed examples (browser checks) run on
+# the author's machine instead: /yolo-sdlc:build proves them, and /yolo-sdlc:check shows each one
+# working with its screenshot before anything ships. Keeping them out of CI keeps it fast.
 # Deploys are NOT done here. Cloudflare Workers Builds deploys from git (docs/SETUP.md),
 # so no Cloudflare credentials ever live in GitHub.
 name: ci
@@ -25,14 +26,3 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test:risk
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:examples
-      # Third-party action referenced by major tag — pin it to a commit SHA after install.
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: example-checks
-          path: |
-            test-results/
-            playwright-report/
-          retention-days: 14

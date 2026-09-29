@@ -7,6 +7,9 @@
   "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": "./.output/public", "binding": "ASSETS" },
   "observability": { "enabled": true },
+  // No per-version preview URLs (*-<name>.<subdomain>.workers.dev): each Worker has one address,
+  // and it's behind Access. Applies to env.preview too.
+  "preview_urls": false,
   "vars": {
     // Production refuses traffic unless scripts/deploy-guard.mjs deployed it from main.
     "DEPLOY_ENV": "production",

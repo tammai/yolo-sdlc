@@ -12,7 +12,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 export const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const SCAFFOLD = join(PLUGIN_ROOT, 'scaffold')
-const SKIP = new Set(['node_modules', '.nuxt', '.output', '.wrangler', '.data', 'test-results', 'playwright-report', '.git'])
+// ui-templates/ stays in the plugin: the app gets only the shell installed into layers/ui/.
+const SKIP = new Set(['node_modules', '.nuxt', '.output', '.wrangler', '.data', 'test-results', 'playwright-report', '.git', 'ui-templates'])
+export const TEMPLATES = join(SCAFFOLD, 'ui-templates')
 const TYPES = ['internal', 'public', 'prototype']
 const DATA = ['public', 'internal', 'personal']
 
@@ -93,7 +95,7 @@ export function createApp(dir, { name, type, data, owner, description, reviewers
   writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
 
   // The UI shell for this type (dashboard / landing / starter), with its dependencies and content.
-  execFileSync(process.execPath, [join(target, 'scripts', 'ui-template.mjs')], { cwd: target, stdio: 'ignore' })
+  execFileSync(process.execPath, [join(target, 'scripts', 'ui-template.mjs'), '--from', TEMPLATES], { cwd: target, stdio: 'ignore' })
 
   writeFileSync(join(target, '.yolo-sdlc.json'), JSON.stringify({ plugin: 'yolo-sdlc', version: pluginVersion() }, null, 2) + '\n')
 
