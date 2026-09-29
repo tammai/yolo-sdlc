@@ -49,6 +49,8 @@ When something goes wrong in production, follow the app's `docs/ROLLBACK.md`. Ro
 
 **Everyone else: make a change**
 
+<p align="center"><img src="artifacts/loop-simple.svg" width="720" alt="From a problem to the live app, in six steps that loop. 1, you tell Claude the problem in your own words. 2, you agree what done means by picking 2 to 5 examples. 3, Claude builds it and a second Claude checks the work. 4, you see a picture of each example working; if not quite, you change the examples. 5, it goes live safely: riskier changes get a review first. 6, if something is wrong, you press Report a problem, and it becomes the next idea." /></p>
+
 Open the app's folder in Claude and go step by step:
 
 | Step | What happens |
