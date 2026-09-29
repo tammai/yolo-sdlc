@@ -19,7 +19,7 @@
     "check": "pnpm typecheck && pnpm test:risk && pnpm test:examples",
     "risk": "node scripts/risk-tier/cli.mjs",
     "deploy:production": "node scripts/deploy-guard.mjs",
-    "deploy:preview": "wrangler d1 migrations apply DB --remote --env preview && wrangler deploy --env preview",
+    "deploy:preview": "node scripts/deploy-guard.mjs preview",
     "ui:template": "node scripts/ui-template.mjs",
     "review:post": "node scripts/risk-tier/post-review.mjs"
   },
@@ -38,6 +38,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260924.1",
     "@playwright/test": "^1.63.0",
+    "cf": "1.0.0-beta.5",
     "drizzle-kit": "^0.31.11",
     "nitro-cloudflare-dev": "^0.2.2",
     "typescript": "~5.9.3",

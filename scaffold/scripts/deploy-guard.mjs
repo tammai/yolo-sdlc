@@ -1,15 +1,22 @@
 #!/usr/bin/env node
-// Production deploy, and the only way to run one: `pnpm deploy:production`, called by
-// Cloudflare Workers Builds. It refuses unless the build is of `main`, then applies
-// migrations and deploys with DEPLOYED_FROM=main, which the production Worker checks
-// at runtime (server/middleware/0.deploy-guard.ts). A version deployed any other way
-// (a laptop, a misconfigured build) switches itself off instead of serving traffic.
+// Deploys, and the only way to run one: `pnpm deploy:production` and `pnpm deploy:preview`,
+// called by Cloudflare Workers Builds. Both go through Cloudflare's `cf` CLI.
+//
+// Production refuses unless the build is of `main`, then applies migrations and deploys with
+// DEPLOYED_FROM=main, which the production Worker checks at runtime
+// (server/middleware/0.deploy-guard.ts). A version deployed any other way (a laptop, a
+// misconfigured build) switches itself off instead of serving traffic.
+// Preview deploys "<name>-preview" with its own database, from any branch.
+//
+// `cf` takes database IDs, not names, so they're read from wrangler.jsonc (scripts/cloudflare.mjs).
+// `cf d1 migrations apply` goes to the live database and doesn't ask first when nobody is typing,
+// which is why it runs only here, inside Workers Builds.
 //
 // Engineer-owned (red tier).
 
-import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
+import { databaseId, readWrangler, runCf } from './cloudflare.mjs'
 
 // Pure decision, exported for tests. `env` is process.env-shaped.
 export function checkProductionDeploy(env, registry) {
@@ -28,26 +35,43 @@ export function checkProductionDeploy(env, registry) {
   return { ok: true, commit: env.WORKERS_CI_COMMIT_SHA ?? 'unknown' }
 }
 
-// Through pnpm, so it's the project's pinned wrangler. (wrangler's package doesn't export its
-// bin file, so resolving it directly fails.) The shell is only needed for pnpm.cmd on Windows.
-function wrangler(args) {
-  console.log(`$ wrangler ${args.join(' ')}`)
-  const res = spawnSync('pnpm', ['exec', 'wrangler', ...args], { stdio: 'inherit', shell: process.platform === 'win32' })
-  if (res.status !== 0) process.exit(res.status ?? 1)
+// The cf calls for one deploy, exported for tests. cloudflare.config.ts reads DEPLOYED_FROM and
+// DEPLOYED_COMMIT from the environment; nothing else sets them.
+export function deployPlan(mode, wrangler, commit) {
+  const id = databaseId(wrangler, mode)
+  const modeArgs = mode === 'production' ? [] : ['--mode', mode]
+  return {
+    steps: [
+      ['d1', 'migrations', 'apply', id, '--dir', 'migrations'],
+      ['deploy', ...modeArgs, '--message', `${mode} @ ${commit}`],
+    ],
+    env: mode === 'production' ? { DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: commit } : {},
+  }
 }
 
 function main() {
+  const mode = process.argv[2] === 'preview' ? 'preview' : 'production'
   const registry = JSON.parse(readFileSync('app.registry.json', 'utf8'))
-  const verdict = checkProductionDeploy(process.env, registry)
-  if (!verdict.ok) {
-    console.error(`\n✋ Production deploy refused: ${verdict.reason}\n`)
+  let commit = process.env.WORKERS_CI_COMMIT_SHA ?? 'unknown'
+  if (mode === 'production') {
+    const verdict = checkProductionDeploy(process.env, registry)
+    if (!verdict.ok) {
+      console.error(`\n✋ Production deploy refused: ${verdict.reason}\n`)
+      process.exit(1)
+    }
+    commit = verdict.commit
+  }
+  console.log(`Deploying ${mode === 'production' ? 'main' : (process.env.WORKERS_CI_BRANCH ?? 'this branch')} @ ${commit} to ${mode}.`)
+  // DEPLOY_GUARD_DRY_RUN=1: prove cf starts, deploy nothing (used by the tests).
+  if (process.env.DEPLOY_GUARD_DRY_RUN === '1') return runCf(['--version'])
+  let plan
+  try {
+    plan = deployPlan(mode, readWrangler('.'), commit)
+  } catch (err) {
+    console.error(`\n✋ ${err.message}\n`)
     process.exit(1)
   }
-  console.log(`Deploying main @ ${verdict.commit} to production.`)
-  // DEPLOY_GUARD_DRY_RUN=1: prove wrangler starts, deploy nothing (used by the tests).
-  if (process.env.DEPLOY_GUARD_DRY_RUN === '1') return wrangler(['--version'])
-  wrangler(['d1', 'migrations', 'apply', 'DB', '--remote', '--env='])
-  wrangler(['deploy', '--env=', '--var', 'DEPLOYED_FROM:main', '--var', `DEPLOYED_COMMIT:${verdict.commit}`])
+  for (const step of plan.steps) runCf(step, { env: { ...process.env, ...plan.env } })
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) main()

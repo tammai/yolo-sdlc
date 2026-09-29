@@ -8,6 +8,8 @@
     "CLAUDE.md",
     "REVIEW.md",
     "colada.options.ts",
+    "cloudflare.config.ts",
+    "wrangler.config.ts",
     "docs/SETUP.md",
     "drizzle.config.ts",
     "playwright.config.ts",

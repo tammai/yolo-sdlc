@@ -6,7 +6,6 @@
 //   node triage.mjs [appDir] [--from reports.json]
 // Reporter emails are never read: an intent must not name people.
 
-import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -23,9 +22,11 @@ export function referencedIds(intentTexts) {
   return ids
 }
 
-// `wrangler d1 execute --json` prints [{ results: [...], success, meta }].
+// `cf d1 query` prints the API's [{ results: [...], success, meta }], possibly still wrapped as
+// { result: [...] }. Older saved exports (`wrangler d1 execute --json`) have the same inner shape.
 export function rowsFrom(json) {
-  const parsed = typeof json === 'string' ? JSON.parse(json) : json
+  let parsed = typeof json === 'string' ? JSON.parse(json) : json
+  if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.result)) parsed = parsed.result
   return Array.isArray(parsed) ? parsed.flatMap((r) => r.results ?? (r.id != null ? [r] : [])) : []
 }
 
@@ -60,21 +61,18 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
       process.exit(2)
     }
     if (process.env.YOLO_SDLC_REPORTS) {
-      // Test seam: the plugin's behaviour evals point this at a saved `wrangler d1 execute --json`
-      // result, so an eval never reads a live database. Unset everywhere else.
+      // Test seam: the plugin's behaviour evals point this at a saved `cf d1 query` result, so an
+      // eval never reads a live database. Unset everywhere else.
       raw = readFileSync(process.env.YOLO_SDLC_REPORTS, 'utf8')
     } else {
-      // wrangler's own entry file, run by node: no shell, so the query stays one argument on Windows too.
-      const wrangler = join(app, 'node_modules', 'wrangler', 'bin', 'wrangler.js')
-      if (!existsSync(wrangler)) {
-        console.error('wrangler is not installed in this app. Run pnpm install first.')
+      // The app's pinned cf, by the production database's ID (cf takes IDs, not names).
+      try {
+        const { readWrangler, databaseId, runCf } = await import(pathToFileURL(join(app, 'scripts', 'cloudflare.mjs')).href)
+        raw = runCf(['d1', 'query', databaseId(readWrangler(app)), '--sql', QUERY], { app, capture: true })
+      } catch (err) {
+        console.error(err.message)
         process.exit(2)
       }
-      raw = execFileSync(process.execPath, [wrangler, 'd1', 'execute', 'DB', '--remote', '--json', '--command', QUERY], {
-        cwd: app,
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'inherit'],
-      })
     }
   }
   const rows = rowsFrom(raw)

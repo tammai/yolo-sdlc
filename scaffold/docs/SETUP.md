@@ -15,31 +15,45 @@ About 30 minutes, once per app. Afterwards the app's owner works in the Claude d
 
 ## 2. Cloudflare resources
 
+Every Cloudflare step here uses Cloudflare's `cf` CLI (the app pins it in `package.json`). Run these from your own terminal, never a Claude session: the hook blocks every online `cf` command there. Sign in once with `pnpm exec cf auth login`. Every command below takes `--dry-run` to show the request without sending it.
+
 ```bash
-pnpm exec wrangler d1 create <app>-db
-pnpm exec wrangler d1 create <app>-db-preview
-pnpm exec wrangler kv namespace create <app>-kv
-pnpm exec wrangler kv namespace create <app>-kv-preview
+pnpm exec cf d1 create --name <app>-db
+pnpm exec cf d1 create --name <app>-db-preview
+pnpm exec cf kv namespaces create --title <app>-kv
+pnpm exec cf kv namespaces create --title <app>-kv-preview
 ```
 
-Put the IDs, the Worker `name`, and `APP_TYPE` (the same as `type` in the registry) into `wrangler.jsonc` for both the top level and `env.preview`. Commit this on `main` before the owner starts. From then on the file is red tier.
+Put the IDs, the Worker `name`, and `APP_TYPE` (the same as `type` in the registry) into `wrangler.jsonc` for both the top level and `env.preview`. It stays the one place IDs are written: `nuxt dev` reads it for local bindings, and `cloudflare.config.ts` reads it for `cf`. Commit this on `main` before the owner starts. From then on the file is red tier.
 
 ## 3. Sign-in and bot protection
 
-- **Internal apps:** on each Worker (production and `-preview`), open the **Access** tab → **Protect this Worker behind Access**.
-  - Scope: **All traffic**.
-  - Policy: your company's email domain or a group. Use **Cloudflare account** only for test apps. Don't reuse an existing "Allow emails" policy, because it lets in everyone listed for *other* apps.
-  - Under **Application values**, copy the **AUD tag** into `ACCESS_AUD`, and the JWKS URL's host (`<team>.cloudflareaccess.com`) into `ACCESS_TEAM_DOMAIN`, for that environment in `wrangler.jsonc`.
-- **Public apps:** protect only `/reports*` and `/api/feedback` for GET with an Access application on those paths. Create a Turnstile widget, put the site key in `TURNSTILE_SITE_KEY`, and set the secret:
+- **Internal apps:** an Access application on each Worker's hostname (production and `-preview`). Write the application to a file, check it with `--dry-run`, then create it:
   ```bash
-  pnpm exec wrangler secret put TURNSTILE_SECRET_KEY --env=""
-  pnpm exec wrangler secret put TURNSTILE_SECRET_KEY --env preview
+  # access-<name>.json — use your company's email domain or a group. Don't reuse an existing
+  # "Allow emails" policy: it lets in everyone listed for *other* apps.
+  # { "type": "self_hosted", "name": "<name>", "domain": "<name>.<subdomain>.workers.dev",
+  #   "policies": [{ "name": "<name> staff", "decision": "allow", "include": [{ "email_domain": { "domain": "example.com" } }] }] }
+  pnpm exec cf zero-trust access applications create --body @access-<name>.json --dry-run
+  pnpm exec cf zero-trust access applications create --body @access-<name>.json
+  pnpm exec cf zero-trust organizations list     # auth_domain is your <team>.cloudflareaccess.com
+  ```
+  Copy the application's `aud` into `ACCESS_AUD`, and `auth_domain` into `ACCESS_TEAM_DOMAIN`, for that environment in `wrangler.jsonc`. Repeat for `<name>-preview`.
+- **Public apps:** protect only `/reports*` and `/api/feedback` for GET with an Access application on those paths (the same command, with `"domain": "<name>.<subdomain>.workers.dev/reports"` and a second one for `/api/feedback`). Create a Turnstile widget, put its site key in `TURNSTILE_SITE_KEY`, and set its secret on both Workers (you're asked for the value, and it isn't shown):
+  ```bash
+  pnpm exec cf turnstile widgets create --name <name> --domains <name>.<subdomain>.workers.dev --domains <name>-preview.<subdomain>.workers.dev
+  pnpm exec cf workers secrets update TURNSTILE_SECRET_KEY --worker <name>
+  pnpm exec cf workers secrets update TURNSTILE_SECRET_KEY --worker <name>-preview
   ```
 - **Prototypes:** protect the preview hostname with Access. They have no production deploy (see step 4).
 
 ## 4. Deploys: Cloudflare Workers Builds
 
-Connect the repo in the dashboard (Workers → the app → Settings → Builds). Nobody deploys from a laptop, and no Cloudflare token lives in GitHub.
+Nobody deploys from a laptop, and no Cloudflare token lives in GitHub. Both deploy commands run `cf` (`scripts/deploy-guard.mjs`): migrations with `cf d1 migrations apply <database-id>`, then `cf deploy`, reading `cloudflare.config.ts`.
+
+Connect the GitHub repo once in the dashboard (Workers → the app → Settings → Builds): installing Cloudflare's GitHub app has no `cf` command yet. The build settings below can then be set there, or with `cf builds triggers create` (see `pnpm exec cf builds triggers create --help`; every option has `--dry-run`).
+
+> ⚠️ `cf` is in beta (pinned at 1.0.0-beta.5). As of 2026-09-29, `cf deploy` can't yet deploy a Nuxt build: it expects Cloudflare's new build output, which Nitro doesn't write ([cf#18](https://github.com/cloudflare/cf/issues/18), [cf#17](https://github.com/cloudflare/cf/issues/17)), and on Windows its hand-off to Wrangler fails ([cf#19](https://github.com/cloudflare/cf/issues/19)). Until those are fixed, Workers Builds deploys fail at the `cf deploy` step. Watch those issues, then bump `cf` in `package.json`.
 
 Connect **two Workers** to the same repo. The second one exists only for previews.
 
@@ -64,7 +78,7 @@ Connect **two Workers** to the same repo. The second one exists only for preview
 
 Both deploy commands are `pnpm deploy:preview`, so every build of this Worker, from `main` or a branch, uses the preview settings, database and KV. A merge to `main` just refreshes the preview.
 
-> ⚠️ **Never turn on non-production builds on the production Worker with `pnpm deploy:preview`.** Workers Builds always deploys to the Worker it's connected to. `--env preview` only swaps the settings, so an unreviewed branch replaces production and runs against the preview database. This was verified the hard way on 2026-09-24. Previews share one preview Worker with its own D1 and KV, and the last branch pushed wins.
+> ⚠️ **Never turn on non-production builds on the production Worker with `pnpm deploy:preview`.** Workers Builds always deploys to the Worker it's connected to. `--mode preview` only swaps the settings, so an unreviewed branch replaces production and runs against the preview database. This was verified the hard way on 2026-09-24. Previews share one preview Worker with its own D1 and KV, and the last branch pushed wins.
 
 ## 5. Branch protection on `main`
 
@@ -110,7 +124,7 @@ The `block` rules (secrets, destructive migrations) still apply to engineers, an
 
 ### Cloudflare's `cf` CLI
 
-Cloudflare released `cf` in open beta on 2026-09-28. It reaches the whole Cloudflare API, about 3,000 operations. The apps still use Wrangler, which stays supported for 18 months after `cf`'s beta ends. In a session, the hook allows only a few `cf` forms that provably stay on the computer: `cf cli search "…"`, `cf <command> --help` (as the last word), `cf d1 migrations create <name>`, and `cf --version`. A trailing redirect that writes nothing (`2>&1`, `2>/dev/null`) doesn't count as a word. `cf dev` isn't one of them, since it can reach live resources, and the app runs with `pnpm dev` anyway. Everything else is blocked for everyone, engineers included, like `wrangler deploy`: deploys, live databases, KV, secrets, sign-in and account settings. Engineers run those from their own terminal. The hook looks for `cf` anywhere in a command, so wrapped forms count too (`bash -c "cf deploy"`, `env cf …`, `./node_modules/.bin/cf …`). That errs on the safe side: a commit message containing "cf deploy" is blocked as well. A `YOLO_SDLC_GH` set outside a session, for example in a shell profile, isn't caught. That's no worse than today: anyone with write access can post a review comment by hand, which is why the review record is a record, not a lock, and the merge gate plus the deploy guard are what enforce. The managed-settings example blocks every `cf` command for non-engineers, local ones included.
+Cloudflare released `cf` in open beta on 2026-09-28. It reaches the whole Cloudflare API, about 3,000 operations. Every Cloudflare action in these apps goes through `cf`: creating resources, Access, Turnstile, secrets, Workers Builds, migrations on the live database, deploys, rollbacks, and `/yolo-sdlc:triage`'s read of problem reports. Wrangler stays installed only for what runs on this computer: `nuxt dev`'s local bindings, `pnpm db:migrate:local` (which `pnpm check` runs before the browser checks, in CI too), `pnpm preview`, and as the bundler `cf` hands a Nitro build to. `cf --local` keeps its state outside the project, where `nuxt dev` wouldn't see it, so the local database stays on Wrangler until that lines up. In a session, the hook allows only a few `cf` forms that provably stay on the computer: `cf cli search "…"`, `cf <command> --help` (as the last word), `cf d1 migrations create <name>`, and `cf --version`. A trailing redirect that writes nothing (`2>&1`, `2>/dev/null`) doesn't count as a word. `cf dev` isn't one of them, since it can reach live resources, and the app runs with `pnpm dev` anyway. Everything else is blocked for everyone, engineers included, like `wrangler deploy`: deploys, live databases, KV, secrets, sign-in and account settings. Engineers run those from their own terminal. The hook looks for `cf` anywhere in a command, so wrapped forms count too (`bash -c "cf deploy"`, `env cf …`, `./node_modules/.bin/cf …`). That errs on the safe side: a commit message containing "cf deploy" is blocked as well. A `YOLO_SDLC_GH` set outside a session, for example in a shell profile, isn't caught. That's no worse than today: anyone with write access can post a review comment by hand, which is why the review record is a record, not a lock, and the merge gate plus the deploy guard are what enforce. The managed-settings example blocks every `cf` command for non-engineers, local ones included.
 
 ## 7. Managed settings (recommended for a whole team)
 

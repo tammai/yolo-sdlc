@@ -25,5 +25,7 @@
   { "id": "colada-options", "source": "the ssrCatchError fix (PR #9)", "changes": [{ "path": "colada.options.ts", "status": "modified", "added": ["    ssrCatchError: false,"] }], "expect": { "tier": "red", "rules": ["engineer-owned-file"] } },
   { "id": "deploy-script", "source": "weakening the deploy guard via package.json", "changes": [{ "path": "package.json", "status": "modified", "added": ["    \"deploy:production\": \"wrangler deploy\","] }], "expect": { "tier": "red", "rules": ["build-or-deploy-script"] } },
   { "id": "wrangler-config", "source": "PR #5 (Access values)", "changes": [{ "path": "wrangler.jsonc", "status": "modified", "added": ["\"ACCESS_AUD\": \"x\""] }], "expect": { "tier": "red", "rules": ["engineer-owned-file"] } },
+  { "id": "cf-config", "source": "the cf deploy config (0.4.6)", "changes": [{ "path": "cloudflare.config.ts", "status": "modified", "added": ["        DEPLOYED_FROM: bindings.text('main'),"] }], "expect": { "tier": "red", "rules": ["engineer-owned-file"] } },
+  { "id": "wrangler-tooling-config", "source": "the Wrangler bundler settings cf uses (0.4.6)", "changes": [{ "path": "wrangler.config.ts", "status": "modified", "added": ["  noBundle: true,"] }], "expect": { "tier": "red", "rules": ["engineer-owned-file"] } },
   { "id": "destructive-migration", "source": "asked to delete a table that is no longer needed", "changes": [{ "path": "migrations/0003_drop.sql", "added": ["DROP TABLE `feedback`;"] }], "expect": { "tier": "red", "rules": ["destructive-migration"] } }
 ]
