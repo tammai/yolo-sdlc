@@ -21,6 +21,8 @@ Nothing reaches the live app from this computer. `/yolo-sdlc:ship` reviews the c
    - 🟡 **Needs a review:** a separate Claude reviewer checks it before it goes live.
    - 🔴 **Needs an engineer review:** a separate Claude reviewer checks it closely. Say which part triggered it ("because it stores staff phone numbers").
 
+   For 🟡 and 🔴, also say who can clear it, from `reviewers` and `claudeReview` in `app.registry.json`. Reviewers are optional. If none are listed, say it plainly: "No person is listed as a reviewer for this app, so only the Claude review checks this before it goes live." Then make sure they're aware and still want to go ahead before step 3.
+
 2. **Finish the intent.** Set `status: shipped` in the intent file and commit it. It ships when the pull request merges. Do this before the review, so the review reads the final commit.
 
 3. **Engineer review, for 🟡 and 🔴 only, before pushing.** Run `git fetch origin`, then `pnpm risk` again, and use *that* tier: a fix can raise it, and every review has to compare against the latest `main`. Skip the rest of this step only if it's 🟢.

@@ -5,11 +5,11 @@ About 30 minutes, once per app. Afterwards the app's owner works in the Claude d
 ## 1. Repository
 
 1. Create a private GitHub repo from this folder, named after the app: `gh repo create <org>/<name> --private --source . --remote origin --push`. (`/yolo-sdlc:new-app` made the folder and its first commit.)
-2. Check `app.registry.json`. `/yolo-sdlc:new-app` filled in the name, `type`, `data` and a `reviewBy` date 6 months out, plus the owner and yellow reviewer from your GitHub sign-in. Add a one-line description if it's missing, and a second engineer under `reviewers.red`.
+2. Check `app.registry.json`. `/yolo-sdlc:new-app` filled in the name, `type`, `data` and a `reviewBy` date 6 months out, plus the owner from your GitHub sign-in and the reviewers you chose. Add a one-line description if it's missing.
    - `type`: `prototype` (preview only, fake data), `public` (anyone can open it), or `internal` (staff only, behind Access).
    - `data`: `public`, `internal`, or `personal`. Choose `personal` for anything HR-like, and every yellow change becomes red.
-   - `reviewers.yellow` / `reviewers.red`: people who can approve instead of the engineer review, or instead of each other when `claudeReview` is `false`. GitHub won't let anyone approve their own pull request.
-   - `reviewers.red`: at least two engineers.
+   - `reviewers.yellow` / `reviewers.red`: optional. People who can approve instead of the engineer review, or instead of each other when `claudeReview` is `false`. None, one or several are all fine. With none, the Claude engineer review alone clears yellow and red, and the session tells the person each time a change turns yellow or red. GitHub won't let anyone approve their own pull request.
+   - With `claudeReview: false`, list at least one reviewer, or yellow and red changes can never merge.
 3. Replace `@TODO-org/engineers` in `.github/CODEOWNERS`.
 4. Add the owner as a collaborator with **write** access (not admin).
 

@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { after, test } from 'node:test'
-import { createApp, pluginVersion } from '../new-app.mjs'
+import { createApp, parseReviewers, pluginVersion } from '../new-app.mjs'
 import { updateApp } from '../update-app.mjs'
 
 // Short temp paths: Windows' 260-character limit bites deep scaffold paths otherwise.
@@ -21,7 +21,7 @@ test('new-app: an internal app gets the dashboard shell, its name, type and a fi
   assert.deepEqual([reg.name, reg.type, reg.data], ['leave-tracker', 'internal', 'personal'])
   // The registry comes filled in: owner, reviewers, description and a review date 6 months out.
   assert.equal(reg.owner, 'hr-lead')
-  assert.deepEqual(reg.reviewers, { yellow: ['hr-lead'], red: ['hr-lead', 'TODO-second-engineer-handle'] })
+  assert.deepEqual(reg.reviewers, { yellow: ['hr-lead'], red: ['hr-lead'] }, 'reviewers left out: the owner alone')
   assert.equal(reg.description, 'Staff leave requests and approvals')
   const months = (Date.parse(reg.reviewBy) - Date.now()) / (30.4 * 864e5)
   assert.ok(months > 5.5 && months < 6.5, `reviewBy ${reg.reviewBy} is about 6 months out`)
@@ -35,6 +35,17 @@ test('new-app: an internal app gets the dashboard shell, its name, type and a fi
   assert.ok(!existsSync(join(dir, '.claude/skills')), 'skills come from the plugin, not the app')
   assert.equal(readJson(join(dir, '.claude/settings.json')).enabledPlugins['yolo-sdlc@yolo-sdlc'], true)
   assert.match(git(dir, 'log', '--oneline'), /Start leave-tracker from yolo-sdlc/)
+})
+
+test('new-app: reviewers are optional — none, or the handles given', () => {
+  const none = join(root, 'solo')
+  createApp(none, { name: 'solo-app', type: 'prototype', data: 'public', owner: 'hr-lead', reviewers: parseReviewers('none'), git: false })
+  assert.deepEqual(readJson(join(none, 'app.registry.json')).reviewers, { yellow: [], red: [] })
+  const some = join(root, 'team')
+  createApp(some, { name: 'team-app', type: 'prototype', data: 'public', owner: 'hr-lead', reviewers: parseReviewers('@hr-lead, eng1,eng1'), git: false })
+  assert.deepEqual(readJson(join(some, 'app.registry.json')).reviewers, { yellow: ['hr-lead', 'eng1'], red: ['hr-lead', 'eng1'] })
+  assert.equal(parseReviewers(undefined), undefined)
+  assert.throws(() => parseReviewers('ok,not a handle'), /GitHub handle/)
 })
 
 test('new-app: a public app gets the landing shell, its content, and APP_TYPE public', () => {

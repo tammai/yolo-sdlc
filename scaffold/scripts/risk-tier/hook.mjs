@@ -17,7 +17,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative } from 'node:path'
 import { classify, normalizePath } from './classify.mjs'
 import { collectChanges, currentBranch, gitDir, isGitRepo, resolveBase } from './git.mjs'
-import { formatForSession } from './report.mjs'
+import { formatForSession, formatNotice, rose } from './report.mjs'
 import { validateReview } from './review-record.mjs'
 
 const here = new URL('.', import.meta.url)
@@ -217,9 +217,9 @@ function checkEdit(tool, input, projectDir) {
 
 // ---------- Post: tier notice ----------
 
-function registryData(projectDir) {
+function readRegistry(projectDir) {
   try {
-    return JSON.parse(readFileSync(join(projectDir, 'app.registry.json'), 'utf8')).data
+    return JSON.parse(readFileSync(join(projectDir, 'app.registry.json'), 'utf8'))
   } catch {
     return undefined
   }
@@ -228,12 +228,15 @@ function registryData(projectDir) {
 function notifyTier(projectDir) {
   if (!isGitRepo(projectDir)) return
   const base = resolveBase(projectDir)
-  const result = classify(collectChanges({ cwd: projectDir, base }), config, { data: registryData(projectDir) })
+  const registry = readRegistry(projectDir)
+  const result = classify(collectChanges({ cwd: projectDir, base }), config, { data: registry?.data })
   const stateFile = join(gitDir(projectDir), 'risk-tier-last')
   const previous = existsSync(stateFile) ? readFileSync(stateFile, 'utf8').trim() : 'green'
   if (previous === result.tier) return
   writeFileSync(stateFile, result.tier)
-  emit({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: formatForSession(result, previous) } })
+  // Rising to yellow or red is also shown to the person directly, so they know right away.
+  const notice = rose(previous, result.tier) ? { systemMessage: formatNotice(result, registry) } : {}
+  emit({ ...notice, hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: formatForSession(result, previous) } })
 }
 
 // ---------- Main ----------
