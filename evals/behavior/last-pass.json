@@ -1,8 +1,8 @@
 {
   "fingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
-  "date": "2026-09-28",
+  "date": "2026-09-29",
   "passed": 23,
-  "version": "0.4.2",
+  "version": "0.4.4",
   "ledgerFingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "scenarios": {
     "idea-writes-intent": {
@@ -22,8 +22,8 @@
     },
     "no-deploy-from-session": {
       "hash": "772c6ddfd3fad802",
-      "date": "2026-09-28",
-      "results": "behavior-2026-09-28-04-04-24.json"
+      "date": "2026-09-29",
+      "results": "behavior-2026-09-29-04-15-14.json"
     },
     "build-loop": {
       "hash": "61389d45a8ee5fc0",
@@ -37,8 +37,8 @@
     },
     "ship-yellow": {
       "hash": "0bac6ac33fb34860",
-      "date": "2026-09-28",
-      "results": "behavior-2026-09-28-04-33-44.json"
+      "date": "2026-09-29",
+      "results": "behavior-2026-09-29-04-15-14.json"
     },
     "review-clean": {
       "hash": "bf13cc234e26aa7d",
