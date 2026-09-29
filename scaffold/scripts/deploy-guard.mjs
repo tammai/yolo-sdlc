@@ -11,7 +11,7 @@
 // The upload is Wrangler's (`wrangler deploy`, reading wrangler.jsonc). Cloudflare's `cf` CLI
 // 1.0.0-beta.5 can't deploy a Nuxt build yet: it hands the build to Nuxt and then refuses
 // (tested on 2026-09-29: "`pnpm nuxt build` does not currently support `--mode`";
-// cloudflare/cf#17, #18). Migrations go through `cf d1 migrations apply <database-id>`, which
+// cloudflare/cf#45, reported from this test; see also #17, #18). Migrations go through `cf d1 migrations apply <database-id>`, which
 // uses the same d1_migrations table as Wrangler. It goes to the live database and doesn't ask
 // first when nobody is typing, which is why it runs only here, inside Workers Builds.
 //
