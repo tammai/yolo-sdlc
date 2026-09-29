@@ -11,7 +11,7 @@
       "source": {
         "source": "github",
         "repo": "tammai/yolo-sdlc",
-        "ref": "v0.4.7"
+        "ref": "v0.4.8"
       },
       "description": "Lets non-engineers (HR, marketing, PMs, designers) build and ship small apps with Claude, safely. They describe a problem, agree on examples, and see screenshots before anything goes live. Every change gets a risk tier, riskier changes get an independent Claude engineer review, and only reviewed code merged to main is deployed. Runs on a fixed Nuxt + Cloudflare stack; engineers create apps with /yolo-sdlc:new-app and keep them current with /yolo-sdlc:update-app.",
       "author": {
