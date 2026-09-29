@@ -1,7 +1,7 @@
-// Shared by the scripts that call Cloudflare's `cf` CLI (deploy-guard.mjs, the plugin's triage):
-// the resource IDs from wrangler.jsonc, and the project's pinned `cf`, run by node directly.
-// wrangler.jsonc stays the one place IDs are written: `nuxt dev` reads it for local bindings,
-// and cloudflare.config.ts reads it for `cf`. `cf` accepts database IDs, never names.
+// Shared by the scripts that call Cloudflare (deploy-guard.mjs, the plugin's triage): the
+// resource IDs from wrangler.jsonc, and the project's pinned `cf` and `wrangler`, run by node
+// directly. wrangler.jsonc is the one place IDs are written: `nuxt dev` and `wrangler deploy`
+// read it, and `cf` is given IDs from it (`cf` accepts database IDs, never names).
 //
 // Engineer-owned (red tier).
 
@@ -72,28 +72,32 @@ export function kvNamespaceId(config, mode = 'production') {
   return id
 }
 
-// The app's pinned `cf`, from its package's own bin entry: no shell, so arguments such as a SQL
-// query stay one argument on Windows too.
-export function cfEntry(app = '.') {
-  const pkgPath = join(app, 'node_modules', 'cf', 'package.json')
-  if (!existsSync(pkgPath)) throw new Error('cf is not installed in this app. Run pnpm install first.')
+// The app's pinned tool (`cf` or `wrangler`), from its package's own bin entry: no shell, so
+// arguments such as a SQL query stay one argument on Windows too.
+export function binEntry(tool, app = '.') {
+  const pkgPath = join(app, 'node_modules', tool, 'package.json')
+  if (!existsSync(pkgPath)) throw new Error(`${tool} is not installed in this app. Run pnpm install first.`)
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
-  const bin = typeof pkg.bin === 'string' ? pkg.bin : (pkg.bin?.cf ?? Object.values(pkg.bin ?? {})[0])
-  if (!bin) throw new Error("cf's package.json has no bin entry")
+  const bin = typeof pkg.bin === 'string' ? pkg.bin : (pkg.bin?.[tool] ?? Object.values(pkg.bin ?? {})[0])
+  if (!bin) throw new Error(`${tool}'s package.json has no bin entry`)
   return join(dirname(pkgPath), bin)
 }
+export const cfEntry = (app = '.') => binEntry('cf', app)
 
-export function runCf(args, { app = '.', env = process.env, capture = false } = {}) {
-  if (!capture) console.log(`$ cf ${args.join(' ')}`)
-  const res = spawnSync(process.execPath, [cfEntry(app), ...args], {
+export const runCf = (args, opts) => runTool('cf', args, opts)
+export const runWrangler = (args, opts) => runTool('wrangler', args, opts)
+
+function runTool(tool, args, { app = '.', env = process.env, capture = false } = {}) {
+  if (!capture) console.log(`$ ${tool} ${args.join(' ')}`)
+  const res = spawnSync(process.execPath, [binEntry(tool, app), ...args], {
     cwd: app,
     env,
     encoding: 'utf8',
     stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit',
   })
-  if (res.error) throw new Error(`cf couldn't start: ${res.error.message}`)
+  if (res.error) throw new Error(`${tool} couldn't start: ${res.error.message}`)
   if (res.status !== 0) {
-    if (capture) throw new Error(`cf ${args.slice(0, 2).join(' ')} failed (exit ${res.status ?? res.signal})`)
+    if (capture) throw new Error(`${tool} ${args.slice(0, 2).join(' ')} failed (exit ${res.status ?? res.signal})`)
     process.exit(res.status ?? 1)
   }
   return res.stdout

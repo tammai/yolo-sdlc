@@ -5,6 +5,9 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-08-01',
   devtools: { enabled: false },
+  // Rendering is set by the UI shell in layers/ui/: the dashboard and starter shells render in
+  // the browser (ssr: false); the landing shell renders on the server, for search engines and
+  // because its words come from Nuxt Content.
   modules: [
     '@nuxt/ui',
     '@pinia/nuxt',
@@ -15,11 +18,21 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   // app/queries/: one Pinia Colada composable file per kind of server data (auto-imported).
   imports: { dirs: ['queries'] },
+  // Fonts are bundled in public/fonts/ (Google Sans, see app/assets/css/main.css): Nuxt UI's font
+  // module, which downloads fonts from Google or Bunny at build time, is off.
+  ui: { fonts: false },
   icon: {
-    // Icons come from the installed @iconify-json sets, bundled into the app.
-    // Never fetched from the Iconify API at runtime: no third-party calls from the browser.
+    // Lucide icons come from the installed @iconify-json/lucide set and are bundled into the app.
+    // Never fetched from the Iconify API: no third-party calls, at build time or in the browser.
+    // The client bundle holds every icon the app's files use, plus the ones Nuxt UI's own
+    // components use (chevrons, close, loading…), so pages don't ask the server for icons either.
     serverBundle: 'local',
-    clientBundle: { scan: true },
+    clientBundle: {
+      scan: {
+        globInclude: ['**/*.{vue,ts,js,mjs,jsx,tsx,md,mdc,mdx,yml,yaml}', 'node_modules/@nuxt/ui/dist/**/*.{vue,mjs}'],
+        globExclude: ['.nuxt/**', '.output/**', '.wrangler/**', 'coverage/**', 'test-results/**', 'playwright-report/**'],
+      },
+    },
     fallbackToApi: false,
   },
   nitro: {

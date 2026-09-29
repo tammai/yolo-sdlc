@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Deploys, and the only way to run one: `pnpm deploy:production` and `pnpm deploy:preview`,
-// called by Cloudflare Workers Builds. Both go through Cloudflare's `cf` CLI.
+// called by Cloudflare Workers Builds.
 //
 // Production refuses unless the build is of `main`, then applies migrations and deploys with
 // DEPLOYED_FROM=main, which the production Worker checks at runtime
@@ -8,15 +8,18 @@
 // misconfigured build) switches itself off instead of serving traffic.
 // Preview deploys "<name>-preview" with its own database, from any branch.
 //
-// `cf` takes database IDs, not names, so they're read from wrangler.jsonc (scripts/cloudflare.mjs).
-// `cf d1 migrations apply` goes to the live database and doesn't ask first when nobody is typing,
-// which is why it runs only here, inside Workers Builds.
+// The upload is Wrangler's (`wrangler deploy`, reading wrangler.jsonc). Cloudflare's `cf` CLI
+// 1.0.0-beta.5 can't deploy a Nuxt build yet: it hands the build to Nuxt and then refuses
+// (tested on 2026-09-29: "`pnpm nuxt build` does not currently support `--mode`";
+// cloudflare/cf#45, reported from this test; see also #17, #18). Migrations go through `cf d1 migrations apply <database-id>`, which
+// uses the same d1_migrations table as Wrangler. It goes to the live database and doesn't ask
+// first when nobody is typing, which is why it runs only here, inside Workers Builds.
 //
 // Engineer-owned (red tier).
 
 import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { databaseId, kvNamespaceId, readWrangler, resources, runCf } from './cloudflare.mjs'
+import { databaseId, kvNamespaceId, readWrangler, runCf, runWrangler } from './cloudflare.mjs'
 
 // Pure decision, exported for tests. `env` is process.env-shaped.
 export function checkProductionDeploy(env, registry) {
@@ -42,28 +45,20 @@ export function checkPreviewDeploy(env) {
     : { ok: false, reason: 'Preview deploys run only inside Cloudflare Workers Builds, never from a laptop or a session.' }
 }
 
-// The cf calls for one deploy, and the exact environment they get, exported for tests.
-// A dry run comes first, so a deploy that can't work fails before any live migration runs.
-// cloudflare.config.ts binds DEPLOYED_FROM only when it's set here, and only for production.
-export function deployPlan(mode, wrangler, commit, baseEnv = {}) {
+// The calls for one deploy, exported for tests. A Wrangler dry run comes first, so a deploy that
+// can't work fails before any live migration runs. `--env=""` is the top level (production);
+// `--env preview` swaps in env.preview and deploys "<name>-preview". Only production carries
+// DEPLOYED_FROM=main, as a --var of that one deploy.
+export function deployPlan(mode, wrangler, commit) {
   const id = databaseId(wrangler, mode)
   kvNamespaceId(wrangler, mode)
-  // The Worker is named explicitly, so a preview can never land on the production Worker even if
-  // cf didn't pass the mode through to cloudflare.config.ts.
-  const modeArgs = [...(mode === 'production' ? [] : ['--mode', mode]), '--worker', resources(wrangler, mode).name]
-  // APP_DEPLOY_MODE lets cloudflare.config.ts refuse if cf's own mode disagrees.
-  const env = { ...baseEnv, APP_DEPLOY_MODE: mode }
-  delete env.DEPLOYED_FROM
-  delete env.DEPLOYED_COMMIT
-  if (mode === 'production') Object.assign(env, { DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: commit })
-  return {
-    steps: [
-      ['deploy', ...modeArgs, '--dry-run'],
-      ['d1', 'migrations', 'apply', id, '--dir', 'migrations'],
-      ['deploy', ...modeArgs, '--message', `${mode} @ ${commit}`],
-    ],
-    env,
-  }
+  const envArgs = mode === 'production' ? ['--env='] : ['--env', mode]
+  const marker = mode === 'production' ? ['--var', 'DEPLOYED_FROM:main', '--var', `DEPLOYED_COMMIT:${commit}`] : []
+  return [
+    { tool: 'wrangler', args: ['deploy', ...envArgs, '--dry-run'] },
+    { tool: 'cf', args: ['d1', 'migrations', 'apply', id, '--dir', 'migrations'] },
+    { tool: 'wrangler', args: ['deploy', ...envArgs, ...marker] },
+  ]
 }
 
 function main() {
@@ -76,10 +71,18 @@ function main() {
   }
   const { commit } = verdict
   console.log(`Deploying ${mode === 'production' ? 'main' : (process.env.WORKERS_CI_BRANCH ?? 'this branch')} @ ${commit} to ${mode}.`)
-  // DEPLOY_GUARD_DRY_RUN=1: prove cf starts, deploy nothing (used by the tests).
-  if (process.env.DEPLOY_GUARD_DRY_RUN === '1') return runCf(['--version'])
-  const plan = deployPlan(mode, readWrangler('.'), commit, process.env)
-  for (const step of plan.steps) runCf(step, { env: plan.env })
+  // DEPLOY_GUARD_DRY_RUN=1: prove both tools start, deploy nothing (used by the tests).
+  if (process.env.DEPLOY_GUARD_DRY_RUN === '1') {
+    runCf(['--version'])
+    return runWrangler(['--version'])
+  }
+  // A stray DEPLOYED_FROM in the build's own variables never reaches a deploy.
+  const env = { ...process.env }
+  delete env.DEPLOYED_FROM
+  delete env.DEPLOYED_COMMIT
+  for (const step of deployPlan(mode, readWrangler('.'), commit)) {
+    ;(step.tool === 'cf' ? runCf : runWrangler)(step.args, { env })
+  }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
