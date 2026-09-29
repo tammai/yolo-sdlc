@@ -50,8 +50,10 @@ const HANDLE = /^[A-Za-z0-9-]{1,39}$/
 // --reviewers: "none", or GitHub handles separated by commas. Left out: the owner alone.
 export function parseReviewers(value) {
   if (value === undefined) return undefined
+  if (typeof value !== 'string' || !value.trim()) throw new Error('--reviewers needs "none" or GitHub handles, e.g. --reviewers none')
   if (value.trim().toLowerCase() === 'none') return []
   const handles = [...new Set(value.split(',').map((s) => s.trim().replace(/^@/, '')).filter(Boolean))]
+  if (handles.some((h) => h.toLowerCase() === 'none')) throw new Error('--reviewers is either "none" or a list of handles, not both')
   for (const h of handles) if (!HANDLE.test(h)) throw new Error(`reviewer "${h}" isn't a GitHub handle`)
   return handles
 }
@@ -106,7 +108,7 @@ export function createApp(dir, { name, type, data, owner, description, reviewers
 
 function parseArgs(argv) {
   const out = { dir: argv[0] }
-  for (let i = 1; i < argv.length; i += 2) out[argv[i].replace(/^--/, '')] = argv[i + 1]
+  for (let i = 1; i < argv.length; i += 2) out[argv[i].replace(/^--/, '')] = argv[i + 1] ?? null
   return out
 }
 

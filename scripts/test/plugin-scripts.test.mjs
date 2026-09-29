@@ -46,6 +46,9 @@ test('new-app: reviewers are optional — none, or the handles given', () => {
   assert.deepEqual(readJson(join(some, 'app.registry.json')).reviewers, { yellow: ['hr-lead', 'eng1'], red: ['hr-lead', 'eng1'] })
   assert.equal(parseReviewers(undefined), undefined)
   assert.throws(() => parseReviewers('ok,not a handle'), /GitHub handle/)
+  assert.throws(() => parseReviewers('none,eng1'), /not both/)
+  assert.throws(() => parseReviewers(''), /needs "none"/)
+  assert.throws(() => parseReviewers(null), /needs "none"/, '--reviewers with no value after it')
 })
 
 test('new-app: a public app gets the landing shell, its content, and APP_TYPE public', () => {
@@ -88,6 +91,8 @@ test("update-app: restores plugin files and never touches the app's own work", (
   writeFileSync(join(dir, '.ai-sdlc.json'), JSON.stringify({ plugin: 'ai-sdlc', version: '0.3.0' }) + '\n')
   const pkg = readJson(join(dir, 'package.json'))
   pkg.scripts.check = 'echo old'
+  delete pkg.devDependencies.cf // an app from before 0.4.6
+  pkg.devDependencies.wrangler = '^4.0.0' // an app's own version, only reported
   writeFileSync(join(dir, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
   execFileSync('git', [...cfg, 'commit', '-qam', 'app work'], { cwd: dir })
   execFileSync('git', ['add', '-A'], { cwd: dir })
@@ -100,7 +105,11 @@ test("update-app: restores plugin files and never touches the app's own work", (
   const r = updateApp(dir)
   assert.equal(r.branch, `yolo-sdlc-update-${pluginVersion()}`)
   assert.ok(r.changed.includes('scripts/risk-tier/hook.mjs'))
-  assert.ok(r.changed.includes('package.json (scripts)'))
+  const cfVersion = readJson(join(import.meta.dirname, '..', '..', 'scaffold', 'package.json')).devDependencies.cf
+  assert.ok(r.changed.includes(`package.json (scripts; added cf@${cfVersion})`), r.changed.join(' | '))
+  assert.equal(readJson(join(dir, 'package.json')).devDependencies.cf, cfVersion, 'cf, which the deploy scripts need, is added')
+  assert.equal(readJson(join(dir, 'package.json')).devDependencies.wrangler, '^4.0.0', 'other dependencies are never changed')
+  assert.ok(r.depNotes.some((n) => n.startsWith('wrangler:')), 'and are reported')
   assert.deepEqual(r.extra, ['scripts/seed.mjs'])
   // The app's own policies stay, except the old command names, which are renamed.
   assert.equal(readFileSync(join(dir, 'POLICIES.md'), 'utf8'), '# Our policies\nChecked at `/yolo-sdlc:shape`. Our ai-sdlc rollout is in Q3.\n')

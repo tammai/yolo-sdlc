@@ -66,8 +66,13 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
       raw = readFileSync(process.env.YOLO_SDLC_REPORTS, 'utf8')
     } else {
       // The app's pinned cf, by the production database's ID (cf takes IDs, not names).
+      const helper = join(app, 'scripts', 'cloudflare.mjs')
+      if (!existsSync(helper)) {
+        console.error("This app predates the move to Cloudflare's cf CLI (yolo-sdlc 0.4.6). Run /yolo-sdlc:update-app first.")
+        process.exit(2)
+      }
       try {
-        const { readWrangler, databaseId, runCf } = await import(pathToFileURL(join(app, 'scripts', 'cloudflare.mjs')).href)
+        const { readWrangler, databaseId, runCf } = await import(pathToFileURL(helper).href)
         raw = runCf(['d1', 'query', databaseId(readWrangler(app)), '--sql', QUERY], { app, capture: true })
       } catch (err) {
         console.error(err.message)

@@ -78,7 +78,7 @@ Connect **two Workers** to the same repo. The second one exists only for preview
 
 Both deploy commands are `pnpm deploy:preview`, so every build of this Worker, from `main` or a branch, uses the preview settings, database and KV. A merge to `main` just refreshes the preview.
 
-> ⚠️ **Never turn on non-production builds on the production Worker with `pnpm deploy:preview`.** Workers Builds always deploys to the Worker it's connected to. `--mode preview` only swaps the settings, so an unreviewed branch replaces production and runs against the preview database. This was verified the hard way on 2026-09-24. Previews share one preview Worker with its own D1 and KV, and the last branch pushed wins.
+> ⚠️ **Never turn on non-production builds on the production Worker with `pnpm deploy:preview`.** Workers Builds always deploys to the Worker it's connected to. With Wrangler, `--env preview` only swapped the settings, so an unreviewed branch replaced production and ran against the preview database: verified the hard way on 2026-09-24. `cloudflare.config.ts` names the preview Worker explicitly, but that isn't verified against Workers Builds yet, so don't rely on it. Previews share one preview Worker with its own D1 and KV, and the last branch pushed wins.
 
 ## 5. Branch protection on `main`
 

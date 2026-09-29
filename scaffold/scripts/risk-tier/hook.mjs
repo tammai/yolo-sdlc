@@ -53,6 +53,12 @@ const BASH_RULES = [
     why: 'Going live happens only through the reviewed pipeline, never from a session.',
   },
   {
+    // The deploy scripts themselves, however they're started, and Workers Builds' own settings,
+    // which would make a session look like a build of main.
+    re: /\bscripts[\\/](?:deploy-guard|cloudflare)\.mjs\b|\bWORKERS_CI\w*\s*=/,
+    why: 'Going live happens only through the reviewed pipeline (Cloudflare Workers Builds), never from a session.',
+  },
+  {
     re: /\bwrangler\b[^\n]*\b(?:d1|kv|r2)\b[^\n]*--remote\b/,
     why: 'This command would read or change the live database or storage. Live data changes only through a reviewed migration. Engineers read it from their own terminal.',
   },
@@ -93,16 +99,20 @@ function cfLocal(args) {
   return args.length === 4 && args[0] === 'd1' && args[1] === 'migrations' && args[2] === 'create' // a local file
 }
 // Trailing output redirects that write nothing: `2>&1`, `>&2`, `>/dev/null`, `2>/dev/null`,
-// `&>/dev/null`. Unquoted only, so a quoted "2>&1" stays an argument. Redirects into a file
-// aren't on the list, so `cf --help > notes.txt` is still blocked.
+// `&>/dev/null`, each a whole word of its own. Redirects into a file aren't on the list, so
+// `cf --help > notes.txt` is still blocked.
 const HARMLESS_REDIRECT = /^(?:\d?>&\d|(?:\d|&)?>>?\/dev\/null)$/
+// Shell words the way bash joins them: text touching a quote is the same word, so
+// `"--help"2>&1` is one word (bash passes `--help2`), never `--help` plus a redirect.
+const SHELL_WORD = /(?:"[^"]*"|'[^']*'|[^\s"'])+/g
+const unquote = (w) => w.replace(/"([^"]*)"|'([^']*)'/g, '$1$2')
 function cfCallsOnline(command) {
   for (const m of command.matchAll(CF_WORD)) {
-    // The rest of that one command, as rough shell words (quotes stripped).
+    // The rest of that one command, as shell words (quotes removed after splitting).
     const tail = command.slice(m.index + m[0].length).split(/&&|\|\||[;|\n)`]/)[0]
-    const words = tail.match(/"[^"]*"|'[^']*'|\S+/g) ?? []
+    const words = tail.match(SHELL_WORD) ?? []
     while (words.length && HARMLESS_REDIRECT.test(words.at(-1))) words.pop()
-    const args = words.map((w) => w.replace(/^["']|["']$/g, ''))
+    const args = words.map(unquote)
     if (!cfLocal(args)) return true
   }
   return false

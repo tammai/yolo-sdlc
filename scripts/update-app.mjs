@@ -99,9 +99,17 @@ export function updateApp(appDir, { git = true } = {}) {
       scriptsChanged = true
     }
   }
-  if (scriptsChanged) {
+  // Dependencies the plugin's own scripts can't run without are added when missing (a version the
+  // app already has is left alone). Everything else is only reported, below.
+  const added = []
+  for (const dep of m.requiredDevDependencies ?? []) {
+    if (pkg.dependencies?.[dep] || pkg.devDependencies?.[dep]) continue
+    pkg.devDependencies = { ...pkg.devDependencies, [dep]: scaffoldPkg.devDependencies[dep] }
+    added.push(`${dep}@${scaffoldPkg.devDependencies[dep]}`)
+  }
+  if (scriptsChanged || added.length) {
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
-    changed.push('package.json (scripts)')
+    changed.push(`package.json (${[scriptsChanged && 'scripts', added.length && `added ${added.join(', ')}`].filter(Boolean).join('; ')})`)
   }
   const depNotes = []
   for (const field of ['dependencies', 'devDependencies']) {

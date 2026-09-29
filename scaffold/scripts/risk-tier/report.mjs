@@ -74,14 +74,19 @@ export const rose = (previous, tier) => (RANK[tier] ?? 0) > (RANK[previous] ?? 0
 export function whoReviews(tier, registry) {
   const list = (k) => registry?.reviewers?.[k] ?? []
   const people = [...new Set(tier === 'red' ? list('red') : [...list('yellow'), ...list('red')])]
-    .filter((h) => h && !/^TODO/i.test(h))
+    .filter((h) => h && !/^TODO-/.test(h))
     .map((h) => '@' + h)
   const claude = registry?.claudeReview !== false
   if (claude && !people.length) {
     return 'Only the Claude engineer review checks it before it goes live. No person is listed as a reviewer for this app, so make sure you are comfortable with that.'
   }
-  if (claude) return `The Claude engineer review checks it before it goes live, or ${people.join(' or ')} can approve it.`
-  if (people.length) return `${people.join(' or ')} must approve it before it goes live.`
+  // GitHub never lets anyone approve their own pull request, so a listed reviewer who made the
+  // change can't clear it: say so, rather than suggest they can.
+  const own = people.length === 1 && registry?.owner && people[0] === '@' + registry.owner
+    ? ` If you are ${people[0]}, you can't approve your own change, so only the Claude review checks it.`
+    : ' Nobody can approve their own change.'
+  if (claude) return `The Claude engineer review checks it before it goes live, or ${people.join(' or ')} can approve it.${own}`
+  if (people.length) return `${people.join(' or ')} must approve it before it goes live.${own.replace(', so only the Claude review checks it', '')}`
   return 'Nobody listed can approve it, so it can’t go live until an engineer adds a reviewer to app.registry.json.'
 }
 

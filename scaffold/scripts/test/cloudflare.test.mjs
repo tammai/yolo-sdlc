@@ -10,6 +10,13 @@ test('parseJsonc: comments and trailing commas go, comment markers inside string
   assert.deepEqual(parseJsonc('{"s": "quote \\" // not a comment"}'), { s: 'quote " // not a comment' })
 })
 
+test('parseJsonc: ",}" and ",]" inside strings are kept; a BOM is fine; an open /* is an error', () => {
+  assert.deepEqual(parseJsonc('{"a": "x,}", "b": "[1,]", "c": [1, 2 , ] , }'), { a: 'x,}', b: '[1,]', c: [1, 2] })
+  assert.deepEqual(parseJsonc('﻿{"a": 1}'), { a: 1 })
+  assert.throws(() => parseJsonc('{"a": 1} /* oops'), /never ends/)
+  assert.throws(() => parseJsonc('{"a": 1,,}'))
+})
+
 test("the scaffold's own wrangler.jsonc parses, with production and preview resources", () => {
   const config = readWrangler('.')
   const prod = resources(config)

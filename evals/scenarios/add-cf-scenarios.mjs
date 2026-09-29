@@ -50,6 +50,18 @@ const cases = [
   bash('cf-help-quoted-redirect-blocked', 'a quoted "2>&1" is an argument, not a redirect', 'cf deploy --help "2>&1"', true),
   bash('cf-deploy-stderr-blocked', 'a redirect never makes an online call local', 'cf deploy 2>&1', true),
   bash('cf-help-then-deploy-blocked', 'a redirect then another cf call', 'cf --help 2>&1; cf deploy', true),
+  // Found by the engineer review of the 0.4.6 update: text touching a quote is one shell word,
+  // so "--help"2>&1 reaches cf as --help2, not --help plus a redirect.
+  bash('cf-quote-touching-redirect', 'a redirect glued to a quoted --help', 'cf deploy --message "--help"2>&1', true),
+  bash('cf-single-quote-touching-redirect', 'the same with single quotes and /dev/null', "cf deploy --message '--help'2>/dev/null", true),
+  bash('cf-quoted-help-glued', 'a quoted --help glued to a redirect, no message', 'cf deploy "--help"2>&1', true),
+  bash('cf-short-help-glued', 'a quoted -h glued to a redirect', 'cf deploy "-h"1>&2', true),
+  bash('cf-quoted-help-spaced-allowed', 'a quoted --help, then a separate redirect', 'cf d1 create "--help" 2>&1', false),
+  // The deploy scripts can't be started from a session, and a session can't pose as Workers Builds.
+  bash('deploy-guard-preview-blocked', 'the preview deploy, started directly', 'node scripts/deploy-guard.mjs preview', true),
+  bash('deploy-guard-spoof-blocked', 'posing as a Workers Builds build of main', 'WORKERS_CI=1 WORKERS_CI_BRANCH=main node scripts/deploy-guard.mjs', true),
+  bash('workers-ci-export-blocked', 'exporting a Workers Builds setting', 'export WORKERS_CI_BRANCH=main', true),
+  bash('deploy-guard-tests-allowed', 'running the deploy guard tests is fine', 'node --test scripts/test/deploy-guard.test.mjs', false),
   // Wrapped forms, found by the engineer review of the 0.4.3 update.
   bash('cf-bash-c', 'wrapped: bash -c', 'bash -c "cf deploy"', true),
   bash('cf-subshell', 'wrapped: a subshell', '(cf deploy)', true),

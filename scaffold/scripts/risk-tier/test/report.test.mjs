@@ -15,6 +15,13 @@ test('whoReviews: no reviewers says plainly that only Claude checks it', () => {
   assert.match(whoReviews('red', { reviewers: { yellow: [], red: [] } }), /Only the Claude engineer review.*No person is listed/)
   assert.match(whoReviews('yellow', {}), /No person is listed/)
   assert.match(whoReviews('red', { reviewers: { red: ['TODO-second-engineer-handle'] } }), /No person is listed/, 'placeholders are not people')
+  assert.match(whoReviews('red', { reviewers: { red: ['todorov'] } }), /@todorov can approve/, 'a real handle that starts with "todo" is a person')
+})
+
+test('whoReviews: never suggests the owner can approve their own change', () => {
+  const solo = whoReviews('red', { owner: 'hr-lead', reviewers: { red: ['hr-lead'] } })
+  assert.match(solo, /If you are @hr-lead, you can't approve your own change, so only the Claude review checks it/)
+  assert.match(whoReviews('red', { reviewers: { red: ['eng1', 'eng2'] } }), /Nobody can approve their own change/)
 })
 
 test('whoReviews: names the people who can approve, by tier', () => {

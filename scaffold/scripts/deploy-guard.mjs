@@ -16,7 +16,7 @@
 
 import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { databaseId, readWrangler, runCf } from './cloudflare.mjs'
+import { databaseId, kvNamespaceId, readWrangler, runCf } from './cloudflare.mjs'
 
 // Pure decision, exported for tests. `env` is process.env-shaped.
 export function checkProductionDeploy(env, registry) {
@@ -35,43 +35,55 @@ export function checkProductionDeploy(env, registry) {
   return { ok: true, commit: env.WORKERS_CI_COMMIT_SHA ?? 'unknown' }
 }
 
-// The cf calls for one deploy, exported for tests. cloudflare.config.ts reads DEPLOYED_FROM and
-// DEPLOYED_COMMIT from the environment; nothing else sets them.
-export function deployPlan(mode, wrangler, commit) {
+// Preview deploys run only inside Workers Builds too, from any branch.
+export function checkPreviewDeploy(env) {
+  return env.WORKERS_CI === '1'
+    ? { ok: true, commit: env.WORKERS_CI_COMMIT_SHA ?? 'unknown' }
+    : { ok: false, reason: 'Preview deploys run only inside Cloudflare Workers Builds, never from a laptop or a session.' }
+}
+
+// The cf calls for one deploy, and the exact environment they get, exported for tests.
+// A dry run comes first, so a deploy that can't work fails before any live migration runs.
+// cloudflare.config.ts binds DEPLOYED_FROM only when it's set here, and only for production.
+export function deployPlan(mode, wrangler, commit, baseEnv = {}) {
   const id = databaseId(wrangler, mode)
+  kvNamespaceId(wrangler, mode)
   const modeArgs = mode === 'production' ? [] : ['--mode', mode]
+  const env = { ...baseEnv }
+  delete env.DEPLOYED_FROM
+  delete env.DEPLOYED_COMMIT
+  if (mode === 'production') Object.assign(env, { DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: commit })
   return {
     steps: [
+      ['deploy', ...modeArgs, '--dry-run'],
       ['d1', 'migrations', 'apply', id, '--dir', 'migrations'],
       ['deploy', ...modeArgs, '--message', `${mode} @ ${commit}`],
     ],
-    env: mode === 'production' ? { DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: commit } : {},
+    env,
   }
 }
 
 function main() {
   const mode = process.argv[2] === 'preview' ? 'preview' : 'production'
   const registry = JSON.parse(readFileSync('app.registry.json', 'utf8'))
-  let commit = process.env.WORKERS_CI_COMMIT_SHA ?? 'unknown'
-  if (mode === 'production') {
-    const verdict = checkProductionDeploy(process.env, registry)
-    if (!verdict.ok) {
-      console.error(`\n✋ Production deploy refused: ${verdict.reason}\n`)
-      process.exit(1)
-    }
-    commit = verdict.commit
+  const verdict = mode === 'production' ? checkProductionDeploy(process.env, registry) : checkPreviewDeploy(process.env)
+  if (!verdict.ok) {
+    console.error(`\n✋ ${mode === 'production' ? 'Production' : 'Preview'} deploy refused: ${verdict.reason}\n`)
+    process.exit(1)
   }
+  const { commit } = verdict
   console.log(`Deploying ${mode === 'production' ? 'main' : (process.env.WORKERS_CI_BRANCH ?? 'this branch')} @ ${commit} to ${mode}.`)
   // DEPLOY_GUARD_DRY_RUN=1: prove cf starts, deploy nothing (used by the tests).
   if (process.env.DEPLOY_GUARD_DRY_RUN === '1') return runCf(['--version'])
-  let plan
+  const plan = deployPlan(mode, readWrangler('.'), commit, process.env)
+  for (const step of plan.steps) runCf(step, { env: plan.env })
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   try {
-    plan = deployPlan(mode, readWrangler('.'), commit)
+    main()
   } catch (err) {
     console.error(`\n✋ ${err.message}\n`)
     process.exit(1)
   }
-  for (const step of plan.steps) runCf(step, { env: { ...process.env, ...plan.env } })
 }
-
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) main()

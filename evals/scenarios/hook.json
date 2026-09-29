@@ -769,6 +769,105 @@
     }
   },
   {
+    "id": "cf-quote-touching-redirect",
+    "source": "a redirect glued to a quoted --help",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --message \"--help\"2>&1"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-single-quote-touching-redirect",
+    "source": "the same with single quotes and /dev/null",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --message '--help'2>/dev/null"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-quoted-help-glued",
+    "source": "a quoted --help glued to a redirect, no message",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy \"--help\"2>&1"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-short-help-glued",
+    "source": "a quoted -h glued to a redirect",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy \"-h\"1>&2"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-quoted-help-spaced-allowed",
+    "source": "a quoted --help, then a separate redirect",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 create \"--help\" 2>&1"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "deploy-guard-preview-blocked",
+    "source": "the preview deploy, started directly",
+    "tool": "Bash",
+    "input": {
+      "command": "node scripts/deploy-guard.mjs preview"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "deploy-guard-spoof-blocked",
+    "source": "posing as a Workers Builds build of main",
+    "tool": "Bash",
+    "input": {
+      "command": "WORKERS_CI=1 WORKERS_CI_BRANCH=main node scripts/deploy-guard.mjs"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "workers-ci-export-blocked",
+    "source": "exporting a Workers Builds setting",
+    "tool": "Bash",
+    "input": {
+      "command": "export WORKERS_CI_BRANCH=main"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "deploy-guard-tests-allowed",
+    "source": "running the deploy guard tests is fine",
+    "tool": "Bash",
+    "input": {
+      "command": "node --test scripts/test/deploy-guard.test.mjs"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
     "id": "cf-bash-c",
     "source": "wrapped: bash -c",
     "tool": "Bash",
