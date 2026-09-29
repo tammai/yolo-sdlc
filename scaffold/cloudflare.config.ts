@@ -11,6 +11,12 @@ const wrangler = readWrangler('.')
 
 export default defineConfig((ctx) => {
   const mode = ctx.mode === 'preview' ? 'preview' : 'production'
+  // The deploy guard says which mode it asked for. If cf's mode disagrees (a beta passing
+  // --mode through wrongly), refuse, rather than wire a preview to production data.
+  const asked = process.env.APP_DEPLOY_MODE
+  if (asked && asked !== mode) {
+    throw new Error(`cloudflare.config.ts: the deploy asked for "${asked}" but cf gave mode "${ctx.mode ?? ''}". Refusing, so a preview never gets production data.`)
+  }
   const { name, d1, kv, vars } = resources(wrangler, mode)
   const scope = mode === 'production' ? wrangler : wrangler.env.preview
   // Only a production deploy, inside a Workers Builds build of main, carries the marker the

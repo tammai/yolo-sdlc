@@ -868,6 +868,39 @@
     }
   },
   {
+    "id": "deploy-guard-read-allowed",
+    "source": "reading or diffing the deploy guard is fine",
+    "tool": "Bash",
+    "input": {
+      "command": "git diff main -- scripts/deploy-guard.mjs && grep -n mode scripts/cloudflare.mjs"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "deploy-guard-node-e-blocked",
+    "source": "importing the helper to run it",
+    "tool": "Bash",
+    "input": {
+      "command": "node -e \"import('./scripts/cloudflare.mjs').then(m => m.runCf(['deploy']))\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "deploy-guard-bun-blocked",
+    "source": "another runtime",
+    "tool": "Bash",
+    "input": {
+      "command": "bun scripts/deploy-guard.mjs preview"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
     "id": "cf-bash-c",
     "source": "wrapped: bash -c",
     "tool": "Bash",

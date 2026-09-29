@@ -49,7 +49,7 @@ test('production: a dry run first, then migrations by ID, then cf deploy with DE
     ['d1', 'migrations', 'apply', ID, '--dir', 'migrations'],
     ['deploy', '--worker', 'app', '--message', 'production @ abc123'],
   ])
-  assert.deepEqual(plan.env, { PATH: 'x', DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: 'abc123' })
+  assert.deepEqual(plan.env, { PATH: 'x', APP_DEPLOY_MODE: 'production', DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: 'abc123' })
 })
 
 test('preview: its own database, --mode preview, and a stray DEPLOYED_FROM is removed', () => {
@@ -57,7 +57,7 @@ test('preview: its own database, --mode preview, and a stray DEPLOYED_FROM is re
   assert.deepEqual(plan.steps[0], ['deploy', '--mode', 'preview', '--worker', 'app-preview', '--dry-run'])
   assert.equal(plan.steps[1][3], PREVIEW_ID)
   assert.deepEqual(plan.steps[2].slice(0, 5), ['deploy', '--mode', 'preview', '--worker', 'app-preview'])
-  assert.deepEqual(plan.env, { PATH: 'x' })
+  assert.deepEqual(plan.env, { PATH: 'x', APP_DEPLOY_MODE: 'preview' })
 })
 
 test('preview deploys run only inside Workers Builds', () => {

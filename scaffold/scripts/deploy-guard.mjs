@@ -51,7 +51,8 @@ export function deployPlan(mode, wrangler, commit, baseEnv = {}) {
   // The Worker is named explicitly, so a preview can never land on the production Worker even if
   // cf didn't pass the mode through to cloudflare.config.ts.
   const modeArgs = [...(mode === 'production' ? [] : ['--mode', mode]), '--worker', resources(wrangler, mode).name]
-  const env = { ...baseEnv }
+  // APP_DEPLOY_MODE lets cloudflare.config.ts refuse if cf's own mode disagrees.
+  const env = { ...baseEnv, APP_DEPLOY_MODE: mode }
   delete env.DEPLOYED_FROM
   delete env.DEPLOYED_COMMIT
   if (mode === 'production') Object.assign(env, { DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: commit })

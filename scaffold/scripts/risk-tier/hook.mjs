@@ -53,9 +53,9 @@ const BASH_RULES = [
     why: 'Going live happens only through the reviewed pipeline, never from a session.',
   },
   {
-    // The deploy scripts themselves, however they're started, and Workers Builds' own settings,
-    // which would make a session look like a build of main.
-    re: /\bscripts[\\/](?:deploy-guard|cloudflare)\.mjs\b|\bWORKERS_CI\w*\s*=/,
+    // Running the deploy scripts, by any runtime or runner (reading or searching them is fine),
+    // and Workers Builds' own settings, which would make a session look like a build of main.
+    re: /\b(?:node|bun|deno|tsx|npx|pnpm|yarn|npm)\b[^\n]*\bscripts[\\/](?:deploy-guard|cloudflare)\.mjs\b|\bWORKERS_CI\w*\s*=/,
     why: 'Going live happens only through the reviewed pipeline (Cloudflare Workers Builds), never from a session.',
   },
   {

@@ -62,6 +62,9 @@ const cases = [
   bash('deploy-guard-spoof-blocked', 'posing as a Workers Builds build of main', 'WORKERS_CI=1 WORKERS_CI_BRANCH=main node scripts/deploy-guard.mjs', true),
   bash('workers-ci-export-blocked', 'exporting a Workers Builds setting', 'export WORKERS_CI_BRANCH=main', true),
   bash('deploy-guard-tests-allowed', 'running the deploy guard tests is fine', 'node --test scripts/test/deploy-guard.test.mjs', false),
+  bash('deploy-guard-read-allowed', 'reading or diffing the deploy guard is fine', 'git diff main -- scripts/deploy-guard.mjs && grep -n mode scripts/cloudflare.mjs', false),
+  bash('deploy-guard-node-e-blocked', 'importing the helper to run it', 'node -e "import(\'./scripts/cloudflare.mjs\').then(m => m.runCf([\'deploy\']))"', true),
+  bash('deploy-guard-bun-blocked', 'another runtime', 'bun scripts/deploy-guard.mjs preview', true),
   // Wrapped forms, found by the engineer review of the 0.4.3 update.
   bash('cf-bash-c', 'wrapped: bash -c', 'bash -c "cf deploy"', true),
   bash('cf-subshell', 'wrapped: a subshell', '(cf deploy)', true),
