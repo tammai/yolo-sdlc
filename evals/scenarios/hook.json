@@ -370,5 +370,215 @@
     "expect": {
       "blocked": true
     }
+  },
+  {
+    "id": "cf-deploy",
+    "source": "cf CLI: deploying from a session",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-npx-deploy-prod",
+    "source": "cf CLI through npx, pinned version",
+    "tool": "Bash",
+    "input": {
+      "command": "npx -y cf@1.0.0-beta.5 deploy --env production"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-previews-deploy",
+    "source": "cf CLI: a preview deploy",
+    "tool": "Bash",
+    "input": {
+      "command": "cf previews deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-d1-query-delete",
+    "source": "cf CLI: changing the live database",
+    "tool": "Bash",
+    "input": {
+      "command": "pnpm dlx cf d1 query DB --sql \"DELETE FROM feedback\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-d1-raw-read",
+    "source": "cf CLI: reading the live database",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 raw DB --sql \"SELECT * FROM feedback\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-d1-migrations-apply",
+    "source": "cf CLI: applying migrations to the live database",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 migrations apply 0123 --remote"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-secret",
+    "source": "cf CLI: setting a secret",
+    "tool": "Bash",
+    "input": {
+      "command": "cf workers secrets update my-app TURNSTILE_SECRET_KEY"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-kv-put",
+    "source": "cf CLI: writing to live KV",
+    "tool": "Bash",
+    "input": {
+      "command": "bunx cf kv keys put NS key value"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-auth-login",
+    "source": "cf CLI: signing in from a session",
+    "tool": "Bash",
+    "input": {
+      "command": "cf auth login"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-chained",
+    "source": "cf CLI hidden after another command",
+    "tool": "Bash",
+    "input": {
+      "command": "pnpm check && cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-env-prefix",
+    "source": "cf CLI after an environment variable",
+    "tool": "Bash",
+    "input": {
+      "command": "CLOUDFLARE_ENV=production cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-engineer-deploy",
+    "source": "cf deploys are blocked for engineers too, like wrangler",
+    "role": "engineer",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-dev-allowed",
+    "source": "cf CLI: the local dev server",
+    "tool": "Bash",
+    "input": {
+      "command": "cf dev"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-build-allowed",
+    "source": "cf CLI: a local build",
+    "tool": "Bash",
+    "input": {
+      "command": "cf build"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-search-allowed",
+    "source": "cf CLI: finding a command",
+    "tool": "Bash",
+    "input": {
+      "command": "cf cli search \"apply D1 migrations\""
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-help-allowed",
+    "source": "cf CLI: reading help",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --help"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-migrations-create-allowed",
+    "source": "cf CLI: a new local migration file",
+    "tool": "Bash",
+    "input": {
+      "command": "cf d1 migrations create add_rooms"
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-in-message-allowed",
+    "source": "\"cf\" inside a commit message is not a call",
+    "tool": "Bash",
+    "input": {
+      "command": "git commit -m \"cf deploy docs later\""
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-folder-allowed",
+    "source": "\"cf\" as a folder name is not a call",
+    "tool": "Bash",
+    "input": {
+      "command": "cd cf && ls"
+    },
+    "expect": {
+      "blocked": false
+    }
   }
 ]

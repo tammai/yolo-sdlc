@@ -32,7 +32,13 @@
       "Bash(npx wrangler versions:*)",
       "Bash(pnpm exec wrangler versions:*)",
       "Bash(wrangler versions:*)",
-      "Bash(npm run deploy:production:*)"
+      "Bash(npm run deploy:production:*)",
+      "Bash(cf:*)",
+      "Bash(npx cf:*)",
+      "Bash(npx -y cf:*)",
+      "Bash(pnpm dlx cf:*)",
+      "Bash(pnpm exec cf:*)",
+      "Bash(bunx cf:*)"
     ],
     "disableBypassPermissionsMode": "disable"
   },

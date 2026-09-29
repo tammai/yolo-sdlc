@@ -108,6 +108,10 @@ Open the folder in Claude. The hooks in `.claude/settings.json` load automatical
 
 The `block` rules (secrets, destructive migrations) still apply to engineers, and CI still gates every merge.
 
+### Cloudflare's `cf` CLI
+
+Cloudflare released `cf` in open beta on 2026-09-28. It reaches the whole Cloudflare API, about 3,000 operations. The apps still use Wrangler, which stays supported for 18 months after `cf`'s beta ends. In a session, the hook allows only local `cf` commands: `cf dev`, `cf build`, `cf cli search`, `cf schema`, `cf d1 migrations create`, and `--help`. Everything else is blocked for everyone, engineers included, like `wrangler deploy`: deploys, live databases, KV, secrets, sign-in and account settings. Engineers run those from their own terminal.
+
 ## 7. Managed settings (recommended for a whole team)
 
 The hooks in `.claude/settings.json` live in the app's repo, and someone with the right permissions could edit them. To hold the guard rails on every non-engineer's machine regardless, an admin deploys Claude Code **managed settings**. Project and user settings can't override them. Start from `docs/managed-settings.example.json`:
@@ -130,7 +134,7 @@ Both files belong to the app, and `/yolo-sdlc:update-app` only creates them when
 
 Follow `docs/ROLLBACK.md`. Rolling back is always done by an engineer, never from a Claude session.
 
-Run `/yolo-sdlc:triage` to turn **Report a problem** submissions into draft intents, and `/yolo-sdlc:report` for per-stage delivery metrics. Triage reads only each report's id, message, page and date, never who sent it, with one fixed query. The messages still enter the engineer's Claude session, so don't use it on an app whose reports may contain sensitive details. Any other read of live data happens in the engineer's own terminal: the session hook blocks every `--remote` database command.
+Run `/yolo-sdlc:triage` to turn **Report a problem** submissions into draft intents, and `/yolo-sdlc:report` for per-stage delivery metrics. Triage reads only each report's id, message, page and date, never who sent it, with one fixed query. The messages still enter the engineer's Claude session, so don't use it on an app whose reports may contain sensitive details. Any other read of live data happens in the engineer's own terminal: the session hook blocks every `--remote` database command, and every online `cf` command.
 
 ## What each layer is for
 

@@ -69,7 +69,31 @@ const BASH_RULES = [
   { re: /\bgh\s+(?:secret|variable)\s+(?:set|delete)\b/, why: 'Repository secrets and settings are managed by engineers.' },
 ]
 
+// Cloudflare's `cf` CLI reaches ~3,000 API operations (deploys, live databases, secrets,
+// DNS, accounts), so it's allowed only for what stays on this computer. Everything else is
+// blocked for everyone, like `wrangler deploy`: engineers run it from their own terminal.
+const CF_LOCAL = /^(?:dev|build|cli|schema|complete|--help|-h|--version|-v)\b|^d1\s+migrations\s+create\b/
+const CF_RUNNER = /^(?:npx(?:\s+(?:-y|--yes))?|pnpm\s+(?:exec|dlx)|bunx|yarn\s+dlx|npm\s+exec(?:\s+--)?)\s+/
+function cfCallsOnline(command) {
+  // Each command in a chain (&&, ||, ;, |, a subshell), with leading VAR=value and a runner removed.
+  for (const part of command.split(/&&|\|\||[;|\n`]|\$\(/)) {
+    const words = part.trim().replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, '').replace(CF_RUNNER, '')
+    const m = words.match(/^cf(?:@\S+)?(?:\s+([\s\S]*))?$/)
+    if (!m) continue
+    const rest = (m[1] ?? '').trim()
+    if (!rest || CF_LOCAL.test(rest) || /(?:^|\s)(?:--help|-h)(?:\s|$)/.test(rest)) continue
+    return true
+  }
+  return false
+}
+
 function checkBash(command, cwd) {
+  if (cfCallsOnline(command)) {
+    deny(
+      "Blocked by the risk check: the `cf` CLI can deploy, change live data and secrets, and manage the whole Cloudflare account. From a session only local commands are allowed (`cf dev`, `cf build`, `cf cli search`, `--help`). Going live happens through the reviewed pipeline; engineers run anything else from their own terminal. " +
+        TAIL,
+    )
+  }
   for (const rule of BASH_RULES) if (rule.re.test(command)) deny(`Blocked by the risk check: ${rule.why} ${TAIL}`)
   if (isPush(command) && ['main', 'master'].includes(currentBranch(cwd))) {
     deny(`Blocked by the risk check: you're on main. Work happens on a branch and reaches main through a pull request. ${TAIL}`)

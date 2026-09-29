@@ -1,6 +1,6 @@
 # Rolling back
 
-For engineers. Something that just went live is wrong, and people are affected. Rolling back is **never done from a Claude session**: the hook blocks `wrangler rollback`, and that's deliberate. Do it yourself, with your own credentials.
+For engineers. Something that just went live is wrong, and people are affected. Rolling back is **never done from a Claude session**: the hook blocks `wrangler rollback` and every online `cf` command, and that's deliberate. Do it yourself, with your own credentials.
 
 ## 1. Decide: roll back or fix forward
 
