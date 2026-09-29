@@ -5,6 +5,9 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-08-01',
   devtools: { enabled: false },
+  // Rendering is set by the UI shell in layers/ui/: the dashboard and starter shells render in
+  // the browser (ssr: false); the landing shell renders on the server, for search engines and
+  // because its words come from Nuxt Content.
   modules: [
     '@nuxt/ui',
     '@pinia/nuxt',

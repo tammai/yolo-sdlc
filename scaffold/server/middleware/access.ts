@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
   // Build-time pre-rendering (e.g. Nuxt Content's data dump) has no bindings and no visitor.
   // import.meta.prerender is fixed at build time: it's never true in the deployed Worker.
   if (import.meta.prerender) return
+  if (isInternalErrorRender(event)) return
   if (useEnv(event).APP_TYPE !== 'internal') return
   await requireUser(event)
 })

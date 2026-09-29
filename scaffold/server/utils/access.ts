@@ -47,3 +47,13 @@ export async function requireUser(event: H3Event): Promise<AppUser> {
   event.context.user = user
   return user
 }
+
+// Nuxt renders its error page (for example the "please sign in" page after a 401) with an
+// internal request to /__nuxt_error. That request carries no Cloudflare bindings, so the
+// middleware must let it through, or the error page itself fails with a 500.
+// Only the internal render lacks the bindings: every request from a visitor arrives through
+// the Worker with them, so a visitor asking for /__nuxt_error still goes through every check.
+// (Nuxt's own `__unenv__` marker can't tell them apart on Workers: every request has it.)
+export function isInternalErrorRender(event: H3Event): boolean {
+  return event.path.startsWith('/__nuxt_error') && !event.context.cloudflare
+}

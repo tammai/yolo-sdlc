@@ -78,8 +78,12 @@ test('the deploy step can actually start cf and wrangler (dry run, deploys nothi
   const preview = spawnSync(process.execPath, [script, 'preview'], { encoding: 'utf8', env: { ...process.env, WORKERS_CI: '' } })
   assert.equal(preview.status, 1)
   assert.match(preview.stderr, /Preview deploy refused/)
-  const ok = run({ WORKERS_CI: '1', WORKERS_CI_BRANCH: 'main', WORKERS_CI_COMMIT_SHA: 'abc123', DEPLOY_GUARD_DRY_RUN: '1' })
+  // A preview dry run: every app type may deploy a preview (prototypes refuse production).
+  const ok = spawnSync(process.execPath, [script, 'preview'], {
+    encoding: 'utf8',
+    env: { ...process.env, WORKERS_CI: '1', WORKERS_CI_BRANCH: 'idea/x', WORKERS_CI_COMMIT_SHA: 'abc123', DEPLOY_GUARD_DRY_RUN: '1' },
+  })
   assert.equal(ok.status, 0, ok.stderr)
-  assert.match(ok.stdout, /Deploying main @ abc123/)
+  assert.match(ok.stdout, /Deploying idea\/x @ abc123 to preview/)
   assert.match(ok.stdout, /\$ cf --version[\s\S]*\d+\.\d+\.\d+[\s\S]*\$ wrangler --version/) // both started
 })

@@ -7,6 +7,7 @@
 export default defineEventHandler((event) => {
   // Local dev, and build-time pre-rendering (fixed at build time, never true in the deployed Worker).
   if (import.meta.dev || import.meta.prerender) return
+  if (isInternalErrorRender(event)) return
   const env = useEnv(event)
   if (env.DEPLOY_ENV === 'production' && env.DEPLOYED_FROM !== 'main') {
     throw createError({
