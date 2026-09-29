@@ -78,21 +78,26 @@ const BASH_RULES = [
 // Cloudflare's `cf` CLI reaches ~3,000 API operations (deploys, live databases, secrets,
 // DNS, accounts), so it's allowed only for what stays on this computer. Everything else is
 // blocked for everyone, like `wrangler deploy`: engineers run it from their own terminal.
-// It's found anywhere, not only where a command starts, so wrapped forms count too: `bash -c
-// "cf deploy"`, `(cf deploy)`, `env cf deploy`, `"cf" deploy`, `./node_modules/.bin/cf deploy`,
-// `npx cf@beta deploy`. That fails safe: "cf deploy" inside a commit message is blocked as well.
-const CF_WORD = /(?:^|[\s;&|(){}`'"=/\\])cf(?:@[\w.-]+)?(?:\.(?:cmd|exe|js))?['"]?(?:\s+--)?\s+([a-z][\w-]*)(?:\s+([a-z][\w-]*))?(?:\s+([a-z][\w-]*))?/gi
-function cfLocal([a, b, c], tail) {
-  if (/(?:^|\s)(?:--help|-h)(?:\s|$)/.test(tail)) return true // help only
-  if (['dev', 'build', 'schema', 'complete'].includes(a)) return true
-  if (a === 'cli' && b === 'search') return true
-  return a === 'd1' && b === 'migrations' && c === 'create' // writes a local file only
+// Every `cf` word counts, wherever it stands, so wrapped forms do too: `bash -c "cf deploy"`,
+// `(cf deploy)`, `env cf …`, `"cf" deploy`, `./node_modules/.bin/cf …`, `npx cf@beta …`. A call
+// is allowed only if it is exactly one of a few forms that stay on this computer; anything
+// else, options first included (`cf --account-id X deploy`), is blocked. That fails safe:
+// "cf deploy" inside a commit message is blocked as well.
+const CF_WORD = /(?:^|[\s;&|(){}`'"=/\\])cf(?:@[\w.-]+)?(?:\.(?:cmd|exe|js))?['"]?(?=\s|$)/gi
+function cfLocal(args) {
+  if (!args.length) return true // bare `cf` prints its help
+  if (args.length === 1 && ['--version', '-v'].includes(args[0])) return true
+  // Help for a command: --help as the very last word, and no `--` that could hide it.
+  if (['--help', '-h'].includes(args.at(-1)) && !args.includes('--')) return true
+  if (args[0] === 'cli' && args[1] === 'search') return true // offline command search
+  return args.length === 4 && args[0] === 'd1' && args[1] === 'migrations' && args[2] === 'create' // a local file
 }
 function cfCallsOnline(command) {
   for (const m of command.matchAll(CF_WORD)) {
-    const words = [m[1], m[2], m[3]].map((w) => w?.toLowerCase())
-    const tail = command.slice(m.index).split(/&&|\|\||[;|\n]/)[0] // the rest of that one command
-    if (!cfLocal(words, tail)) return true
+    // The rest of that one command, as rough shell words (quotes stripped).
+    const tail = command.slice(m.index + m[0].length).split(/&&|\|\||[;|\n)`]/)[0]
+    const args = (tail.match(/"[^"]*"|'[^']*'|\S+/g) ?? []).map((w) => w.replace(/^["']|["']$/g, ''))
+    if (!cfLocal(args)) return true
   }
   return false
 }
@@ -100,7 +105,7 @@ function cfCallsOnline(command) {
 function checkBash(command, cwd) {
   if (cfCallsOnline(command)) {
     deny(
-      "Blocked by the risk check: the `cf` CLI can deploy, change live data and secrets, and manage the whole Cloudflare account. From a session only local commands are allowed (`cf dev`, `cf build`, `cf cli search`, `--help`). Going live happens through the reviewed pipeline; engineers run anything else from their own terminal. " +
+      "Blocked by the risk check: the `cf` CLI can deploy, change live data and secrets, and manage the whole Cloudflare account. From a session only a few local forms are allowed: `cf cli search \"…\"`, `cf <command> --help`, `cf d1 migrations create <name>`. Run the app with `pnpm dev`. Going live happens through the reviewed pipeline; engineers run anything else from their own terminal." +
         TAIL,
     )
   }

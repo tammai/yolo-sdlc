@@ -505,25 +505,102 @@
     }
   },
   {
-    "id": "cf-dev-allowed",
-    "source": "cf CLI: the local dev server",
+    "id": "cf-dev-blocked",
+    "source": "cf dev can reach live resources; the app runs with pnpm dev",
     "tool": "Bash",
     "input": {
       "command": "cf dev"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-build-blocked",
+    "source": "cf build: not needed by the stack",
+    "tool": "Bash",
+    "input": {
+      "command": "cf build"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-complete-blocked",
+    "source": "cf complete: not on the local list",
+    "tool": "Bash",
+    "input": {
+      "command": "cf complete bash"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-bare-allowed",
+    "source": "bare cf prints its help",
+    "tool": "Bash",
+    "input": {
+      "command": "cf"
     },
     "expect": {
       "blocked": false
     }
   },
   {
-    "id": "cf-build-allowed",
-    "source": "cf CLI: a local build",
+    "id": "cf-version-allowed",
+    "source": "cf --version",
     "tool": "Bash",
     "input": {
-      "command": "cf build"
+      "command": "cf --version"
     },
     "expect": {
       "blocked": false
+    }
+  },
+  {
+    "id": "cf-options-first",
+    "source": "an option before the subcommand",
+    "tool": "Bash",
+    "input": {
+      "command": "cf --account-id 0123 deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-short-option-first",
+    "source": "a short option before the subcommand",
+    "tool": "Bash",
+    "input": {
+      "command": "cf -y d1 execute DB --remote"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-help-after-dashdash",
+    "source": "--help hidden after --",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy -- --help"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-help-as-value",
+    "source": "--help given as an option value, then more",
+    "tool": "Bash",
+    "input": {
+      "command": "cf deploy --name --help --env production"
+    },
+    "expect": {
+      "blocked": true
     }
   },
   {

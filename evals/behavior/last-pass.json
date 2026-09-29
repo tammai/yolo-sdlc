@@ -2,7 +2,7 @@
   "fingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "date": "2026-09-29",
   "passed": 23,
-  "version": "0.4.4",
+  "version": "0.4.5",
   "ledgerFingerprint": "449f37be48b5e45faf31cb01f11171985c5a0a190556fb397b9c278c18f6f378",
   "scenarios": {
     "idea-writes-intent": {
@@ -23,7 +23,7 @@
     "no-deploy-from-session": {
       "hash": "772c6ddfd3fad802",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-04-15-14.json"
+      "results": "behavior-2026-09-29-04-24-03.json"
     },
     "build-loop": {
       "hash": "61389d45a8ee5fc0",
@@ -38,7 +38,7 @@
     "ship-yellow": {
       "hash": "0bac6ac33fb34860",
       "date": "2026-09-29",
-      "results": "behavior-2026-09-29-04-15-14.json"
+      "results": "behavior-2026-09-29-04-24-03.json"
     },
     "review-clean": {
       "hash": "bf13cc234e26aa7d",
