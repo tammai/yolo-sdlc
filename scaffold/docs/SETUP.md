@@ -38,7 +38,7 @@ Put the IDs, the Worker `name`, and `APP_TYPE` (the same as `type` in the regist
   pnpm exec cf zero-trust access applications create --body @access-<name>.json
   pnpm exec cf zero-trust organizations list     # auth_domain is your <team>.cloudflareaccess.com
   ```
-  Copy the application's `aud` into `ACCESS_AUD`, and `auth_domain` into `ACCESS_TEAM_DOMAIN`, for that environment in `wrangler.jsonc`. Repeat for `<name>-preview`.
+  Copy the application's `aud` into `ACCESS_AUD`, and `auth_domain` into `ACCESS_TEAM_DOMAIN`, for that environment in `wrangler.jsonc`. Repeat for `<name>-preview`. The dashboard's "Protect this Worker" also covered each version's preview URL (`*-<name>.<subdomain>.workers.dev`); this application doesn't, so add `"self_hosted_domains": ["<name>.<subdomain>.workers.dev", "*-<name>.<subdomain>.workers.dev"]` to the body, or set `"preview_urls": false` in `wrangler.jsonc`. The app's own sign-in check still refuses those URLs either way.
 - **Public apps:** protect only `/reports*` and `/api/feedback` for GET with an Access application on those paths (the same command, with `"domain": "<name>.<subdomain>.workers.dev/reports"` and a second one for `/api/feedback`). Create a Turnstile widget, put its site key in `TURNSTILE_SITE_KEY`, and set its secret on both Workers (you're asked for the value, and it isn't shown):
   ```bash
   pnpm exec cf turnstile widgets create --name <name> --domains <name>.<subdomain>.workers.dev --domains <name>-preview.<subdomain>.workers.dev

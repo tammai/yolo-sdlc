@@ -45,18 +45,18 @@ const wrangler = {
 test('production: a dry run first, then migrations by ID, then cf deploy with DEPLOYED_FROM=main', () => {
   const plan = deployPlan('production', wrangler, 'abc123', { PATH: 'x' })
   assert.deepEqual(plan.steps, [
-    ['deploy', '--dry-run'],
+    ['deploy', '--worker', 'app', '--dry-run'],
     ['d1', 'migrations', 'apply', ID, '--dir', 'migrations'],
-    ['deploy', '--message', 'production @ abc123'],
+    ['deploy', '--worker', 'app', '--message', 'production @ abc123'],
   ])
   assert.deepEqual(plan.env, { PATH: 'x', DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: 'abc123' })
 })
 
 test('preview: its own database, --mode preview, and a stray DEPLOYED_FROM is removed', () => {
   const plan = deployPlan('preview', wrangler, 'abc123', { PATH: 'x', DEPLOYED_FROM: 'main', DEPLOYED_COMMIT: 'z' })
-  assert.deepEqual(plan.steps[0], ['deploy', '--mode', 'preview', '--dry-run'])
+  assert.deepEqual(plan.steps[0], ['deploy', '--mode', 'preview', '--worker', 'app-preview', '--dry-run'])
   assert.equal(plan.steps[1][3], PREVIEW_ID)
-  assert.deepEqual(plan.steps[2].slice(0, 3), ['deploy', '--mode', 'preview'])
+  assert.deepEqual(plan.steps[2].slice(0, 5), ['deploy', '--mode', 'preview', '--worker', 'app-preview'])
   assert.deepEqual(plan.env, { PATH: 'x' })
 })
 

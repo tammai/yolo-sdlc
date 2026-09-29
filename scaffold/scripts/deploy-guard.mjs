@@ -16,7 +16,7 @@
 
 import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { databaseId, kvNamespaceId, readWrangler, runCf } from './cloudflare.mjs'
+import { databaseId, kvNamespaceId, readWrangler, resources, runCf } from './cloudflare.mjs'
 
 // Pure decision, exported for tests. `env` is process.env-shaped.
 export function checkProductionDeploy(env, registry) {
@@ -48,7 +48,9 @@ export function checkPreviewDeploy(env) {
 export function deployPlan(mode, wrangler, commit, baseEnv = {}) {
   const id = databaseId(wrangler, mode)
   kvNamespaceId(wrangler, mode)
-  const modeArgs = mode === 'production' ? [] : ['--mode', mode]
+  // The Worker is named explicitly, so a preview can never land on the production Worker even if
+  // cf didn't pass the mode through to cloudflare.config.ts.
+  const modeArgs = [...(mode === 'production' ? [] : ['--mode', mode]), '--worker', resources(wrangler, mode).name]
   const env = { ...baseEnv }
   delete env.DEPLOYED_FROM
   delete env.DEPLOYED_COMMIT
