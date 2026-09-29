@@ -110,7 +110,7 @@ The `block` rules (secrets, destructive migrations) still apply to engineers, an
 
 ### Cloudflare's `cf` CLI
 
-Cloudflare released `cf` in open beta on 2026-09-28. It reaches the whole Cloudflare API, about 3,000 operations. The apps still use Wrangler, which stays supported for 18 months after `cf`'s beta ends. In a session, the hook allows only local `cf` commands: `cf dev`, `cf build`, `cf cli search`, `cf schema`, `cf d1 migrations create`, and `--help`. Everything else is blocked for everyone, engineers included, like `wrangler deploy`: deploys, live databases, KV, secrets, sign-in and account settings. Engineers run those from their own terminal.
+Cloudflare released `cf` in open beta on 2026-09-28. It reaches the whole Cloudflare API, about 3,000 operations. The apps still use Wrangler, which stays supported for 18 months after `cf`'s beta ends. In a session, the hook allows only local `cf` commands: `cf dev`, `cf build`, `cf cli search`, `cf schema`, `cf d1 migrations create`, and `--help`. Everything else is blocked for everyone, engineers included, like `wrangler deploy`: deploys, live databases, KV, secrets, sign-in and account settings. Engineers run those from their own terminal. The hook looks for `cf` anywhere in a command, so wrapped forms count too (`bash -c "cf deploy"`, `env cf …`, `./node_modules/.bin/cf …`). That errs on the safe side: a commit message containing "cf deploy" is blocked as well. The managed-settings example blocks every `cf` command for non-engineers, local ones included.
 
 ## 7. Managed settings (recommended for a whole team)
 

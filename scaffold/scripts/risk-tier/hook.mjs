@@ -67,22 +67,32 @@ const BASH_RULES = [
   { re: /--no-verify\b/, why: 'Skipping the checks is not allowed.' },
   { re: /\bgh\s+pr\s+merge\b[^\n]*--admin\b/, why: 'Merging past the required checks is not allowed.' },
   { re: /\bgh\s+(?:secret|variable)\s+(?:set|delete)\b/, why: 'Repository secrets and settings are managed by engineers.' },
+  {
+    // The plugin's evals point these at stand-ins for GitHub and the live database, from outside
+    // the session. Set from inside one, they could stand in for the real review steps.
+    re: /\bYOLO_SDLC_(?:GH|REPORTS)\b/,
+    why: 'YOLO_SDLC_GH and YOLO_SDLC_REPORTS are test settings for the plugin\'s own evals, never for real work.',
+  },
 ]
 
 // Cloudflare's `cf` CLI reaches ~3,000 API operations (deploys, live databases, secrets,
 // DNS, accounts), so it's allowed only for what stays on this computer. Everything else is
 // blocked for everyone, like `wrangler deploy`: engineers run it from their own terminal.
-const CF_LOCAL = /^(?:dev|build|cli|schema|complete|--help|-h|--version|-v)\b|^d1\s+migrations\s+create\b/
-const CF_RUNNER = /^(?:npx(?:\s+(?:-y|--yes))?|pnpm\s+(?:exec|dlx)|bunx|yarn\s+dlx|npm\s+exec(?:\s+--)?)\s+/
+// It's found anywhere, not only where a command starts, so wrapped forms count too: `bash -c
+// "cf deploy"`, `(cf deploy)`, `env cf deploy`, `"cf" deploy`, `./node_modules/.bin/cf deploy`,
+// `npx cf@beta deploy`. That fails safe: "cf deploy" inside a commit message is blocked as well.
+const CF_WORD = /(?:^|[\s;&|(){}`'"=/\\])cf(?:@[\w.-]+)?(?:\.(?:cmd|exe|js))?['"]?(?:\s+--)?\s+([a-z][\w-]*)(?:\s+([a-z][\w-]*))?(?:\s+([a-z][\w-]*))?/gi
+function cfLocal([a, b, c], tail) {
+  if (/(?:^|\s)(?:--help|-h)(?:\s|$)/.test(tail)) return true // help only
+  if (['dev', 'build', 'schema', 'complete'].includes(a)) return true
+  if (a === 'cli' && b === 'search') return true
+  return a === 'd1' && b === 'migrations' && c === 'create' // writes a local file only
+}
 function cfCallsOnline(command) {
-  // Each command in a chain (&&, ||, ;, |, a subshell), with leading VAR=value and a runner removed.
-  for (const part of command.split(/&&|\|\||[;|\n`]|\$\(/)) {
-    const words = part.trim().replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, '').replace(CF_RUNNER, '')
-    const m = words.match(/^cf(?:@\S+)?(?:\s+([\s\S]*))?$/)
-    if (!m) continue
-    const rest = (m[1] ?? '').trim()
-    if (!rest || CF_LOCAL.test(rest) || /(?:^|\s)(?:--help|-h)(?:\s|$)/.test(rest)) continue
-    return true
+  for (const m of command.matchAll(CF_WORD)) {
+    const words = [m[1], m[2], m[3]].map((w) => w?.toLowerCase())
+    const tail = command.slice(m.index).split(/&&|\|\||[;|\n]/)[0] // the rest of that one command
+    if (!cfLocal(words, tail)) return true
   }
   return false
 }

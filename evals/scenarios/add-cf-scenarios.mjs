@@ -28,8 +28,23 @@ const cases = [
   bash('cf-search-allowed', 'cf CLI: finding a command', 'cf cli search "apply D1 migrations"', false),
   bash('cf-help-allowed', 'cf CLI: reading help', 'cf deploy --help', false),
   bash('cf-migrations-create-allowed', 'cf CLI: a new local migration file', 'cf d1 migrations create add_rooms', false),
-  bash('cf-in-message-allowed', '"cf" inside a commit message is not a call', 'git commit -m "cf deploy docs later"', false),
   bash('cf-folder-allowed', '"cf" as a folder name is not a call', 'cd cf && ls', false),
+  bash('cf-word-in-text-allowed', '"cf" as an ordinary word, e.g. "cf. the plan"', 'git commit -m "Rooms page (cf. the plan)"', false),
+  bash('cf-cli-other-blocked', 'cf cli: only `cli search` is local', 'cf cli config set token abc', true),
+  bash('cf-dev-lookalike-blocked', '"dev-something" is not `cf dev`', 'cf dev-tunnels create', true),
+  // Wrapped forms, found by the engineer review of the 0.4.3 update.
+  bash('cf-bash-c', 'wrapped: bash -c', 'bash -c "cf deploy"', true),
+  bash('cf-subshell', 'wrapped: a subshell', '(cf deploy)', true),
+  bash('cf-env', 'wrapped: env', 'env cf deploy', true),
+  bash('cf-command', 'wrapped: command', 'command cf deploy', true),
+  bash('cf-quoted', 'wrapped: the name in quotes', '"cf" deploy', true),
+  bash('cf-bin-path', 'wrapped: the binary by path', './node_modules/.bin/cf deploy', true),
+  bash('cf-npm-exec', 'runner: npm exec', 'npm exec cf -- d1 raw DB --sql "SELECT 1"', true),
+  bash('cf-yarn-dlx', 'runner: yarn dlx', 'yarn dlx cf deploy', true),
+  bash('cf-in-message-fails-safe', '"cf deploy" inside a commit message is blocked too (fails safe)', 'git commit -m "cf deploy docs later"', true),
+  // The plugin's eval seams can't be set from a session.
+  bash('seam-gh-blocked', 'pointing review posting at another script', 'YOLO_SDLC_GH=./x.mjs pnpm review:post .git/yolo-sdlc-review/abc.json', true),
+  bash('seam-reports-blocked', 'pointing triage at a made-up export', 'export YOLO_SDLC_REPORTS=/tmp/r.json', true),
 ]
 const ids = new Set(cases.map((c) => c.id))
 const all = JSON.parse(readFileSync(path, 'utf8')).filter((s) => !ids.has(s.id))

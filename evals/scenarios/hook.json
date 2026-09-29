@@ -560,17 +560,6 @@
     }
   },
   {
-    "id": "cf-in-message-allowed",
-    "source": "\"cf\" inside a commit message is not a call",
-    "tool": "Bash",
-    "input": {
-      "command": "git commit -m \"cf deploy docs later\""
-    },
-    "expect": {
-      "blocked": false
-    }
-  },
-  {
     "id": "cf-folder-allowed",
     "source": "\"cf\" as a folder name is not a call",
     "tool": "Bash",
@@ -579,6 +568,160 @@
     },
     "expect": {
       "blocked": false
+    }
+  },
+  {
+    "id": "cf-word-in-text-allowed",
+    "source": "\"cf\" as an ordinary word, e.g. \"cf. the plan\"",
+    "tool": "Bash",
+    "input": {
+      "command": "git commit -m \"Rooms page (cf. the plan)\""
+    },
+    "expect": {
+      "blocked": false
+    }
+  },
+  {
+    "id": "cf-cli-other-blocked",
+    "source": "cf cli: only `cli search` is local",
+    "tool": "Bash",
+    "input": {
+      "command": "cf cli config set token abc"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-dev-lookalike-blocked",
+    "source": "\"dev-something\" is not `cf dev`",
+    "tool": "Bash",
+    "input": {
+      "command": "cf dev-tunnels create"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-bash-c",
+    "source": "wrapped: bash -c",
+    "tool": "Bash",
+    "input": {
+      "command": "bash -c \"cf deploy\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-subshell",
+    "source": "wrapped: a subshell",
+    "tool": "Bash",
+    "input": {
+      "command": "(cf deploy)"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-env",
+    "source": "wrapped: env",
+    "tool": "Bash",
+    "input": {
+      "command": "env cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-command",
+    "source": "wrapped: command",
+    "tool": "Bash",
+    "input": {
+      "command": "command cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-quoted",
+    "source": "wrapped: the name in quotes",
+    "tool": "Bash",
+    "input": {
+      "command": "\"cf\" deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-bin-path",
+    "source": "wrapped: the binary by path",
+    "tool": "Bash",
+    "input": {
+      "command": "./node_modules/.bin/cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-npm-exec",
+    "source": "runner: npm exec",
+    "tool": "Bash",
+    "input": {
+      "command": "npm exec cf -- d1 raw DB --sql \"SELECT 1\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-yarn-dlx",
+    "source": "runner: yarn dlx",
+    "tool": "Bash",
+    "input": {
+      "command": "yarn dlx cf deploy"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "cf-in-message-fails-safe",
+    "source": "\"cf deploy\" inside a commit message is blocked too (fails safe)",
+    "tool": "Bash",
+    "input": {
+      "command": "git commit -m \"cf deploy docs later\""
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "seam-gh-blocked",
+    "source": "pointing review posting at another script",
+    "tool": "Bash",
+    "input": {
+      "command": "YOLO_SDLC_GH=./x.mjs pnpm review:post .git/yolo-sdlc-review/abc.json"
+    },
+    "expect": {
+      "blocked": true
+    }
+  },
+  {
+    "id": "seam-reports-blocked",
+    "source": "pointing triage at a made-up export",
+    "tool": "Bash",
+    "input": {
+      "command": "export YOLO_SDLC_REPORTS=/tmp/r.json"
+    },
+    "expect": {
+      "blocked": true
     }
   }
 ]
