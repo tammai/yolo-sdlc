@@ -264,6 +264,46 @@
     ]
   },
   {
+    "id": "check-two-ways",
+    "source": "/yolo-sdlc:check on a built change: runs the checks, looks at the screenshots, and offers both ways to check (results, or a dev server to try it yourself)",
+    "timeoutMinutes": 20,
+    "budget": 4,
+    "setup": {
+      "branch": "idea/meeting-rooms",
+      "message": "Built: meeting rooms list",
+      "fixture": "ship-yellow"
+    },
+    "prompt": "/yolo-sdlc:check",
+    "graders": [
+      {
+        "type": "transcriptMatches",
+        "regex": "(?i)(try(ing)? it (out )?yourself|click around|dev server|localhost)",
+        "why": "offers the person the way to try the app themselves"
+      },
+      {
+        "type": "transcriptMatches",
+        "regex": "(?i)(show me the results|screenshot|picture)",
+        "why": "offers (or shows) the example-by-example results with pictures"
+      },
+      {
+        "type": "transcriptMatches",
+        "regex": "(?i)(test-results/screens|works)",
+        "why": "ties examples to results, not just \"all tests pass\""
+      },
+      {
+        "type": "fileMatches",
+        "glob": "intent/2026-09-24-meeting-rooms.md",
+        "regex": "status:\\s*built",
+        "why": "changes nothing: the intent stays built, not shipped"
+      },
+      {
+        "type": "branchNot",
+        "branch": "main",
+        "why": "stays on the idea branch"
+      }
+    ]
+  },
+  {
     "id": "triage-drafts-intents",
     "source": "/yolo-sdlc:triage: group reports into draft intents, skip spam and covered reports, never name people",
     "role": "engineer",

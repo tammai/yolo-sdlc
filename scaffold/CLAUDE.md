@@ -19,7 +19,7 @@ Five skills, always in this order. Each one leaves the `intent/<slug>.md` file o
 | `/yolo-sdlc:idea` | draft | Their problem, in their words, on a new branch. Nothing is built. |
 | `/yolo-sdlc:shape` | agreed | 2–5 examples ("When I …, I see …") that they explicitly approve, checked against `POLICIES.md` |
 | `/yolo-sdlc:build` | built | Technical plan, a plan review (yellow/red), then an implementer builds and a fresh verifier checks it, up to 3 rounds |
-| `/yolo-sdlc:check` | built | Screenshots next to each example. "Is this what you wanted?" |
+| `/yolo-sdlc:check` | built | Screenshots next to each example, or a dev server to try it yourself. "Is this what you wanted?" |
 | `/yolo-sdlc:ship` | shipped | Pull request, tier explained, who approves what. The pipeline deploys. |
 
 If someone asks for a change directly, start at `/yolo-sdlc:idea`, even for something small. It takes a minute and keeps the record. Engineers also have `/yolo-sdlc:triage` (problem reports → draft intents), `/yolo-sdlc:report` (delivery metrics) and `/yolo-sdlc:learn` (repeated issues → lessons in `LEARNED.md`).
