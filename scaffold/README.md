@@ -22,7 +22,7 @@ Five skills, always in this order. Each one moves the idea's file, `intent/<slug
 | `/yolo-sdlc:idea` | The person's problem in their own words, at most 5 questions. Nothing is built. |
 | `/yolo-sdlc:shape` | 2–5 examples ("When I …, I see …") that they explicitly approve |
 | `/yolo-sdlc:build` | Technical plan, a plan review before any code (yellow/red), then an implementer builds (checks first) and a fresh verifier audits it against the intent, up to 3 rounds |
-| `/yolo-sdlc:check` | A screenshot next to each example: "Is this what you wanted?" |
+| `/yolo-sdlc:check` | A screenshot next to each example, or a local dev server to try it yourself: "Is this what you wanted?" |
 | `/yolo-sdlc:ship` | Engineer review on the local commit, then push once, open the pull request, post the review, merge. The pipeline deploys. |
 
 ## Risk tiers and review
